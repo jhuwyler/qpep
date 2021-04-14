@@ -5,3 +5,4 @@
 /opensand-testbed/venv/
 /src/bitbucket.org/
 */__pycache__/
+/venv/
