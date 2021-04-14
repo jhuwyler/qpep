@@ -2,8 +2,6 @@ package client
 
 import (
 	"crypto/tls"
-	"github.com/lucas-clemente/quic-go"
-	"golang.org/x/net/context"
 	"io"
 	"log"
 	"net"
@@ -13,6 +11,9 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/lucas-clemente/quic-go"
+	"golang.org/x/net/context"
 )
 
 var (
@@ -24,7 +25,7 @@ var (
 		IdleTimeout:       time.Duration(300) * time.Second}
 	quicSession             quic.Session
 	QuicClientConfiguration = quic.Config{
-		IdleTimeout:        time.Duration(300) * time.Second,
+		MaxIdleTimeout:     time.Duration(300) * time.Second,
 		MaxIncomingStreams: 40000,
 	}
 )
