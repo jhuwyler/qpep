@@ -5,7 +5,11 @@ services:
     #image: pavja2/qpep:ws-gw
     build: ws-gw/
     ports:
-      - "4242:4242"
+      - "0.0.0.0:4242:4242/udp"
+      - "0.0.0.0:4242:4242/tcp"
+      - "3141"
+      - "5358"
+      - "5926"
     networks:
       gwlan:
         ipv4_address: 172.22.0.9
