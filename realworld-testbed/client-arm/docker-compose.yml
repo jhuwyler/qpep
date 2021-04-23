@@ -8,9 +8,7 @@ services:
       - "5358"
       - "5926"
     volumes:
-      - ../../src/:/root/go/src
-    environment:
-      GOPATH: /root/go
+      - ../../src/:/usr/local/go/src
     networks:
       gwlan:
         ipv4_address: 172.22.0.4
