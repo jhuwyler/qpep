@@ -26,7 +26,6 @@ services:
       - net.ipv6.conf.all.disable_ipv6=0
   ws-st:
     container_name: realworld-qpep-ws-st
-    #image: pavja2/qpep:ws-st
     build: ws-st/
     networks:
       stlan:
