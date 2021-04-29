@@ -29,9 +29,8 @@ networks:
   gwlan:
     name: qpep-gwlan
     driver: bridge
-    enable_ipv6: true
+    enable_ipv6: false
     ipam:
       driver: default
       config:
         - subnet: 172.22.0.0/24
-        - subnet: 2001:660:6602:142::1/64
