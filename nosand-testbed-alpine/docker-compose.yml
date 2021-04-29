@@ -56,7 +56,7 @@ services:
       - "../src/:/root/go/src"
 networks:
   gwlan:
-    name: qpep-gwlan
+    name: qpep-gwlan-alpine
     driver: bridge
     enable_ipv6: true
     ipam:
@@ -65,7 +65,7 @@ networks:
         - subnet: 172.22.0.0/24
         - subnet: 2001:660:6602:142::1/64
   stlan:
-    name: qpep-stlan
+    name: qpep-stlan-alpine
     driver: bridge
     enable_ipv6: true
     ipam:
