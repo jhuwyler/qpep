@@ -1,7 +1,7 @@
 version: '2.4'
 services:
   terminal:
-    container_name: qpep-terminal
+    container_name: qpep-terminal-alp
     build: terminal/
     ports:
       - "3141"
@@ -13,10 +13,10 @@ services:
       GOPATH: /root/go
     networks:
       gwlan:
-        ipv4_address: 172.22.0.4
+        ipv4_address: 172.24.0.4
         priority: 900
       stlan:
-        ipv4_address: 172.21.0.4
+        ipv4_address: 172.23.0.4
         priority: 1000
     privileged: true
     cap_add:
@@ -27,11 +27,11 @@ services:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=0
   ws-st:
-    container_name: qpep-ws-st
+    container_name: qpep-ws-st-alp
     build: ws-st/
     networks:
       stlan:
-        ipv4_address: 172.21.0.9
+        ipv4_address: 172.23.0.9
     privileged: true
     cap_add:
       - NET_ADMIN
@@ -42,11 +42,11 @@ services:
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
   ws-gw:
-    container_name: qpep-ws-gw
+    container_name: qpep-ws-gw-alp
     build: ws-gw/
     networks:
       gwlan:
-        ipv4_address: 172.22.0.9
+        ipv4_address: 172.24.0.9
     privileged: true
     cap_add:
       - NET_ADMIN
@@ -62,8 +62,8 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 172.22.0.0/24
-        - subnet: 2001:660:6602:142::1/64
+        - subnet: 172.24.0.0/24
+        - subnet: 2001:662:6602:142::1/64
   stlan:
     name: qpep-stlan-alpine
     driver: bridge
@@ -71,5 +71,5 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 172.21.0.0/24
-        - subnet: 2001:661:6602:142::1/64
+        - subnet: 172.23.0.0/24
+        - subnet: 2001:663:6602:142::1/64
