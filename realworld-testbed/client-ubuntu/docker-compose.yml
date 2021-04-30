@@ -8,7 +8,7 @@ services:
       - "5358"
       - "5926"
     volumes:
-      - ../src/:/root/go/src
+      - ../packet-captures/:/home/pcaps
     environment:
       GOPATH: /root/go
     networks:
