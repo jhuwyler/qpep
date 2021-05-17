@@ -22,7 +22,7 @@ services:
     devices:
       - /dev/net/tun
     sysctls:
-      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv6.conf.all.disable_ipv6=1
   ws-st:
     container_name: qpep-ws-st-ubuntu-rw
     build: ws-st/
