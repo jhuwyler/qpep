@@ -81,8 +81,9 @@ class BasicTestbed(object):
         sitespeed_container.exec_run("ip route add default via " + str(os.getenv("ST_NETWORK_HEAD"))+".0.4")
         logger.success("Sitespeed Workstation Connected to Satellite Network")
 
-    def launch_wireshark(self):
-        logger.debug("Starting Wireshark on Satellite Endpoint")
-        docker_client = docker.from_env()
-        satellite_container = docker_client.containers.get(os.getenv("SAT_CONTAINER_NAME"))
-        satellite_container.exec_run("wireshark", detach=True)
+if __name__ == '__main__':
+    docker_client = docker.from_env()
+    for container in docker_client.containers.list():
+        print(container.id)
+    workstation_container = docker_client.containers.get('qpep-ws-st-ubuntu-rw')
+    
