@@ -8,47 +8,16 @@ import xml.etree.ElementTree as ET
 from dotenv import load_dotenv
 load_dotenv()
 
-class BasicTestbed(object):
-    def __init__(self, host_ip="192.168.1.199", display_number=0, linux=False):
-        self.host_ip = host_ip
-        self.display_number = display_number
-        self.linux = linux
-
+class DistributedTestbed(object):
     def start_testbed(self):
         # First, shut down any old running testbeds
         logger.debug("Shutting Down Previous Testbeds")
-        subprocess.call(["docker-compose", "down"], stderr=subprocess.DEVNULL)
+        subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_LOCAL") ,"down"], stderr=subprocess.DEVNULL)
 
-        # The DISPLAY env variable points to an X server for showing OpenSAND UI
-        my_env = {**os.environ, 'DISPLAY': str(self.host_ip) + ":" + str(self.display_number)}
-        logger.debug("Starting Testbed Containers")
+        logger.debug("Starting local Testbed Containers")
 
         # Start the docker containers
-        subprocess.call(["docker-compose", "up", "-d"], env=my_env)
-
-        # Wait for the opensand container to initialize then send a command to run the simulation
-        logger.debug("Starting Opensand Platform")
-        opensand_launched = False
-        while not opensand_launched:
-            try:
-                nc = nclib.Netcat(('localhost', int(os.getenv('SAT_PORT_NUMBER'))), verbose=False)
-                nc.recv_until(b'help')
-                nc.recv()
-                nc.send(b'status\n')
-                response = nc.recv()
-                opensand_launched = ('SAT' in str(response)) and ('GW0' in str(response)) and ('ST1' in str(response))
-            except nclib.errors.NetcatError:
-                continue
-
-        time.sleep(1) # it often takes a little while for Opensand to identify all hosts
-        logger.debug("Launching Opensand Simulation")
-        nc.send(b'start\n')
-        simulation_running = False
-        while not simulation_running:
-            nc.send(b'status\n')
-            response = str(nc.recv())
-            # wait for all three components (satellite, terminal and gateway) to start running
-            simulation_running = response.count('RUNNING') > 3
+        subprocess.call(["docker-compose", "-f", "./client-ubuntu/docker-compose.yml" , "up", "-d"], env=my_env)
 
         # now that the network is running, it is possible to add ip routes from user terminal through the network
         logger.debug("Connecting User Terminal to Satellite Spot Beam")
@@ -82,8 +51,5 @@ class BasicTestbed(object):
         logger.success("Sitespeed Workstation Connected to Satellite Network")
 
 if __name__ == '__main__':
-    docker_client = docker.from_env()
-    for container in docker_client.containers.list():
-        print(container.id)
-    workstation_container = docker_client.containers.get('qpep-ws-st-ubuntu-rw')
+    subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_LOCAL") ,"down"], stderr=subprocess.DEVNULL)
     
