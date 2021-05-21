@@ -17,9 +17,26 @@ services:
     cap_add:
       - NET_ADMIN
     sysctls:
-      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv6.conf.all.disable_ipv6=1
     volumes:
       - "../../src/:/root/go/src"
+    environment:
+      GOPATH: /root/go
+  ws-ovpn:
+    container_name: ${WS_OVPN_CONTAINER_NAME:-ws-ovpn}
+    #image: pavja2/qpep:ws-ovpn
+    build: ws-ovpn/
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "${WS_OVPN_PORT:-1994}:1994/udp"
+    volumes:
+      - ./ws-ovpn/:/etc/openvpn
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6= 1
+    networks:
+      gwlan:
+        ipv4_address: "${GW_NETWORK_HEAD:-172.22}.0.10"
 networks:
   gwlan:
     name: qpep-gwlan

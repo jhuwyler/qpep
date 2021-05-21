@@ -1,2 +1,6 @@
 FROM pavja2/qpep:ws-gw
-ENTRYPOINT bash && go run /root/go/src/qpep/main.go
+COPY config/gw.conf /etc/opensand/daemon.conf
+COPY config/entrypoint.sh /tmp/entrypoint.sh
+RUN chmod +x /tmp/entrypoint.sh
+COPY pepsal /usr/bin/pepsal
+ENTRYPOINT /bin/bash /tmp/entrypoint.sh

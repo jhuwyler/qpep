@@ -51,5 +51,10 @@ class DistributedTestbed(object):
         logger.success("Sitespeed Workstation Connected to Satellite Network")
 
 if __name__ == '__main__':
-    subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_LOCAL") ,"down"], stderr=subprocess.DEVNULL)
+    #subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_SERVER") ,"down"], stderr=subprocess.DEVNULL)
+    #subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_SERVER") ,"up"], stderr=subprocess.DEVNULL)
+    docker_client = docker.DockerClient(base_url="ssh://pi@localhost:1994")
+    for container in docker_client.containers.list():
+        print(container.id)
+
     
