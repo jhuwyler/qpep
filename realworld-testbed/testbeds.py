@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 from dotenv import load_dotenv
 load_dotenv()
 
-class DistributedTestbed(object):
+class RealWorldTestbed(object):
     def start_testbed(self):
         # First, shut down any old running testbeds
         logger.debug("Shutting Down Previous Testbeds")
@@ -17,7 +17,7 @@ class DistributedTestbed(object):
         logger.debug("Starting local Testbed Containers")
 
         # Start the docker containers
-        subprocess.call(["docker-compose", "-f", "./client-ubuntu/docker-compose.yml" , "up", "-d"], env=my_env)
+        subprocess.call(["docker-compose", "-f", "./client/docker-compose.yml" , "up", "-d"], env=my_env)
 
         # now that the network is running, it is possible to add ip routes from user terminal through the network
         logger.debug("Connecting User Terminal to Satellite Spot Beam")
@@ -25,7 +25,7 @@ class DistributedTestbed(object):
         terminal_container = docker_client.containers.get(os.getenv("ST_CONTAINER_NAME"))
         terminal_container.exec_run("/sbin/ip route delete default")
         terminal_container.exec_run("/sbin/ip route add default via " + str(os.getenv("GW_NETWORK_HEAD")) + ".0.3")
-        logger.success("OpeSAND Testbed Running")
+        logger.success("Real-world Testbed Running")
 
     def stop_testbed(self):
         logger.debug("Shutting Down Previous Testbeds")
@@ -53,7 +53,7 @@ class DistributedTestbed(object):
 if __name__ == '__main__':
     #subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_SERVER") ,"down"], stderr=subprocess.DEVNULL)
     #subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_SERVER") ,"up"], stderr=subprocess.DEVNULL)
-    docker_client = docker.DockerClient(base_url="ssh://pi@localhost:1994")
+    docker_client = docker.DockerClient(base_url="ssh://julian_huwyler@cloud.jhuwyler.dev")
     for container in docker_client.containers.list():
         print(container.id)
 
