@@ -30,7 +30,7 @@ services:
     cap_add:
       - NET_ADMIN
     ports:
-      - "${WS_OVPN_PORT:-1994}:1994/udp"
+      - "0.0.0.0:${WS_OVPN_PORT:-1194}:1194/udp"
     volumes:
       - ./ws-ovpn/:/etc/openvpn
     sysctls:
