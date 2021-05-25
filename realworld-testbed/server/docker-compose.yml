@@ -23,6 +23,14 @@ services:
       - "../../src/:/root/go/src"
     environment:
       GOPATH: /root/go
+  tinyproxy:
+    image: vimagick/tinyproxy
+    ports:
+      - "5001:8888"
+    restart: always
+    networks:
+      gwlan:
+        ipv4_address: 172.22.0.5
   ws-ovpn:
     container_name: ${WS_OVPN_CONTAINER_NAME:-ws-ovpn}
     #image: pavja2/qpep:ws-ovpn
