@@ -12,6 +12,7 @@ services:
       - ../../src/:/root/go/src
     environment:
       GOPATH: /root/go
+      HTTP_PROXY: "http://cloud.jhuwyler.dev"
     networks:
       stlan:
         ipv4_address: 172.21.0.4
