@@ -25,7 +25,7 @@ services:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
   ws-st:
-    container_name: ${WS_WS_CONTAINER_NAME:-realworld-qpep-ws-st}
+    container_name: ${WS_ST_CONTAINER_NAME:-realworld-qpep-ws-st}
     #image: pavja2/qpep:ws-st
     build: ws-st/
     networks:
@@ -39,7 +39,7 @@ services:
     volumes:
       - ../packet-captures/:/home/pcaps
   sitespeed:
-    container_name: realworld-qpep-sitespeed
+    container_name: ${WS_SITESPEED_CONTAINER_NAME:-realworld-qpep-sitespeed}
     build: sitespeed/
     cap_add:
       - NET_ADMIN

@@ -15,7 +15,6 @@ class Scenario(ABC):
     @abstractmethod
     def deploy_scenario(self):
         self.testbed.start_testbed()
-        self.testbed.connect_terminal_workstation()
 
     def run_benchmarks(self, deployed=False):
         for benchmark in self.benchmarks:
@@ -35,6 +34,13 @@ class PlainScenario(Scenario):
     def deploy_scenario(self, testbed_up=False):
         if not testbed_up:
             super().deploy_scenario()
+        docker_client = docker.from_env()
+        terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
+        sitespeed_workstation = docker_client.containers.get(os.getenv("WS_SITESPEED_CONTAINER_NAME"))
+        logger.debug("Configuring proxy on Terminal")
+        terminal_workstation.exec_run("./tmp/configure_proxy.sh")
+        logger.debug("Configuring proxy on Sitespeed")
+        sitespeed_workstation.exec_run("./tmp/configure_proxy.sh")
 
 class OpenVPNScenario(Scenario):
     def deploy_scenario(self, testbed_up=False):
@@ -60,11 +66,11 @@ class QPEPScenario(Scenario):
 
         logger.debug("Configuring Client Side of QPEP Proxy")
         terminal_container = docker_client.containers.get(os.getenv("ST_CONTAINER_NAME"))
-        terminal_container.exec_run("bash /opensand_config/configure_qpep.sh")
+        terminal_container.exec_run("bash ./tmp/config/configure_qpep.sh")
 
         logger.debug("Configuring Gateway Side of QPEP Proxy")
-        gateway_workstation = docker_client.containers.get(os.getenv("WS_GW_CONTAINER_NAME"))
-        gateway_workstation.exec_run("bash /opensand_config/configure_qpep.sh")
+        docker_client_cloud = docker.DockerClient(base_url="ssh://julian_huwyler@cloud.jhuwyler.dev")
+        gateway_workstation = docker_client_cloud.containers.get(os.getenv('WS_GW_CONTAINER_NAME'))
 
         if testbed_up:
             # kill running QPEP services for fresh start
@@ -72,7 +78,7 @@ class QPEPScenario(Scenario):
             terminal_container.exec_run("pkill -9 main")
 
         logger.debug("Launching QPEP Client")
-        terminal_container.exec_run("go run /root/go/src/qpep/main.go -client -gateway " + str(os.getenv("GW_NETWORK_HEAD")) + ".0.9 ", detach=True)
+        terminal_container.exec_run("go run /root/go/src/qpep/main.go -client -gateway cloud.jhuwyler.dev ", detach=True)
         logger.debug("Launching QPEP Gateway")
         gateway_workstation.exec_run("go run /root/go/src/qpep/main.go", detach=True)
         logger.success("QPEP Running")
@@ -149,8 +155,9 @@ class PEPsalScenario(Scenario):
         if self.terminal:
             logger.debug("Deploying PEPsal on Terminal Endpoint")
             terminal_client = docker_client.containers.get(os.getenv("ST_CONTAINER_NAME"))
-            terminal_client.exec_run("bash /opensand_config/launch_pepsal.sh")
+            terminal_client.exec_run("bash ./tmp/config/launch_pepsal.sh")
         if self.gateway:
             logger.debug("Deploying PEPsal on Gateway Endpoint")
-            gateway_client = docker_client.containers.get(os.getenv("GW_CONTAINER_NAME"))
-            gateway_client.exec_run("bash /opensand_config/launch_pepsal.sh")
+            docker_client_cloud = docker.DockerClient(base_url="ssh://julian_huwyler@cloud.jhuwyler.dev")
+            gateway_workstation = docker_client_cloud.containers.get(os.getenv('WS_GW_CONTAINER_NAME'))
+            gateway_client.exec_run("bash ./tmp/launch_pepsal.sh")
