@@ -12,7 +12,6 @@ services:
       - ../../src/:/root/go/src
     environment:
       GOPATH: /root/go
-      HTTP_PROXY: "http://cloud.jhuwyler.dev"
     networks:
       stlan:
         ipv4_address: 172.21.0.4
@@ -37,8 +36,6 @@ services:
       - NET_ADMIN
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
-    environment:
-      DISPLAY:
     volumes:
       - ../packet-captures/:/home/pcaps
   sitespeed:
