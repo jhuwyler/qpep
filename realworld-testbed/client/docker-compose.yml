@@ -1,7 +1,7 @@
 version: '2.4'
 services:
   terminal:
-    container_name: realworld-qpep-terminal
+    container_name: ${WS_WS_CONTAINER_NAME:-realworld-qpep-ws-terminal}
     #image: pavja2/qpep:terminal
     build: terminal/
     ports:
@@ -25,7 +25,7 @@ services:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
   ws-st:
-    container_name: realworld-qpep-ws-st
+    container_name: ${WS_WS_CONTAINER_NAME:-realworld-qpep-ws-st}
     #image: pavja2/qpep:ws-st
     build: ws-st/
     networks:

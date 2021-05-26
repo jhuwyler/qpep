@@ -1,7 +1,7 @@
 version: '2.4'
 services:
   ws-gw:
-    container_name: qpep-ws-gw
+    container_name: ${WS_GW_CONTAINER_NAME:-qpep-ws-gw}
     #image: pavja2/qpep:ws-gw
     build: ws-gw/
     ports:

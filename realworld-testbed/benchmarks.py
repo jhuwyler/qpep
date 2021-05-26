@@ -72,13 +72,14 @@ class IperfBenchmark(Benchmark):
 
     def run_iperf_test(self, transfer_bytes, reset_on_run, with_timeout=True, timeout=600):
         logger.debug("Starting iperf server")
-        docker_client = docker.from_env()
-        gateway_workstation = docker_client.containers.get(os.getenv('WS_GW_CONTAINER_NAME'))
+        docker_client_cloud = docker.DockerClient(base_url="ssh://julian_huwyler@cloud.jhuwyler.dev")
+        gateway_workstation = docker_client_cloud.containers.get(os.getenv('WS_GW_CONTAINER_NAME'))
         if reset_on_run:
             gateway_workstation.exec_run("pkill -9 iperf3")
             time.sleep(1)
         gateway_workstation.exec_run("iperf3 -s", detach=True)
         logger.debug("Starting iperf client")
+        docker_client = docker.from_env()
         terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
         if reset_on_run:
             terminal_workstation.exec_run("pkill -9 iperf3")
