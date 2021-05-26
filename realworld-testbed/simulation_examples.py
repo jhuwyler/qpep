@@ -4,7 +4,7 @@ import time
 from statistics import mean
 import json
 from loguru import logger
-from testbeds import BasicTestbed, LeoTestbed
+from testbeds import RealWorldTestbed
 from scenarios import QPEPScenario, OpenVPNScenario, PEPsalScenario, PlainScenario, QPEPAckScenario, QPEPCongestionScenario
 from benchmarks import IperfBenchmark, SitespeedBenchmark
 import numpy
@@ -47,7 +47,7 @@ def ack_bundling_iperf_scenario():
 def iperf_test_scenario():
     # Simulates IPERF transfers at different file sizes
 
-    testbed = BasicTestbed(host_ip=HOST_IP)
+    testbed = RealWorldTestbed()
     # from 250k to 9.75 mb in 250kb steps
     # we add one modest "Warm up" sessions to start the connections for d_pepsal and qpep which have high first packet costs  but only
     # experience these costs once, when the customer starts the respective applications
@@ -115,9 +115,6 @@ def plt_test_scenario(testbed=None):
         if scenario.name == os.getenv("SCENARIO_NAME"):
             scenario.print_results()
 
-
-
-HOST_IP = "192.168.0.15" # Set this to the IP address of an X Server (Display #0)
 if __name__ == '__main__':
     # These functions draw on parameters from the .env file to determine which scenarios to run and which portions of the scenario. See the QPEP README for some advice on using .env to run simulations in parallel
     logger.remove()
@@ -125,10 +122,10 @@ if __name__ == '__main__':
     logger.add(sys.stderr, level="DEBUG")
 
     # Run Iperf Goodput Tests
-    #iperf_test_scenario()
+    iperf_test_scenario()
 
     # Run PLT Alexa Top 20 Test
     #plt_test_scenario()
 
     #Next look at ACK decimation
-    ack_bundling_iperf_scenario()
+    #ack_bundling_iperf_scenario()

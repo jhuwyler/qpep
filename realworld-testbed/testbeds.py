@@ -12,21 +12,21 @@ class RealWorldTestbed(object):
     def start_testbed(self):
         # First, shut down any old running testbeds
         logger.debug("Shutting Down Previous Testbed: local")
-        subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_LOCAL") ,"down"], stderr=subprocess.DEVNULL)
+        subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_CLIENT") ,"down"], stderr=subprocess.DEVNULL)
         logger.debug("Shutting Down Previous Testbeds: remote")
         subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_SERVER"), "-c", "cloud" ,"down"], stderr=subprocess.DEVNULL)
 
         logger.debug("Starting local Testbed Containers")
         # Start the docker containers
-        subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_LOCAL") , "up", "-d"], env=my_env)
+        subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_CLIENT") , "up", "-d"])
         logger.debug("Starting remote Testbed Containers")
-        subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_SERVER"), "-c", "cloud"  , "up", "-d"], env=my_env)
+        subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_SERVER"), "-c", "cloud"  , "up", "-d"])
 
         logger.success("Real-world Testbed Running")
 
     def stop_testbed(self):
         logger.debug("Shutting Down Testbed: local")
-        subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_LOCAL") ,"down"], stderr=subprocess.DEVNULL)
+        subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_CLIENT") ,"down"], stderr=subprocess.DEVNULL)
         logger.debug("Shutting Down Testbeds: remote")
         subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_SERVER"), "-c", "cloud" ,"down"], stderr=subprocess.DEVNULL)
     

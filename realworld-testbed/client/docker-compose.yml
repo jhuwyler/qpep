@@ -1,7 +1,7 @@
 version: '2.4'
 services:
   terminal:
-    container_name: ${WS_WS_CONTAINER_NAME:-realworld-qpep-ws-terminal}
+    container_name: ${ST_CONTAINER_NAME:-realworld-qpep-ws-terminal}
     #image: pavja2/qpep:terminal
     build: terminal/
     ports:
