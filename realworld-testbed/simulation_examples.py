@@ -75,26 +75,26 @@ def plt_test_scenario(testbed=None):
     if testbed is None:
         testbed = RealWorldTestbed()
     alexa_top_20 = [
-    "https://www.google.com",
-    "https://www.youtube.com",
-    "https://www.tmall.com",
-    "https://www.facebook.com",
-    "https://www.baidu.com",
-    "https://www.qq.com",
-    "https://www.sohu.com",
-    "https://www.taobao.com",
-    "https://www.360.cn",
-    "https://www.jd.com",
-    "https://www.yahoo.com",
-    "https://www.amazon.com",
-    "https://www.wikipedia.org",
-    "https://www.weibo.com",
-    "https://www.sina.com.cn",
-    "https://www.reddit.com",
-    "https://www.live.com",
-    "https://www.netflix.com",
-    "https://www.okezone.com",
-    "https://www.vk.com"
+        "https://www.google.com",
+        "https://www.youtube.com",
+        "https://www.tmall.com",
+        "https://www.facebook.com",
+        "https://www.baidu.com",
+        "https://www.qq.com",
+        "https://www.sohu.com",
+        "https://www.taobao.com",
+        "https://www.360.cn",
+        "https://www.jd.com",
+        "https://www.yahoo.com",
+        "https://www.amazon.com",
+        "https://www.wikipedia.org",
+        "https://www.weibo.com",
+        "https://www.sina.com.cn",
+        "https://www.reddit.com",
+        "https://www.live.com",
+        "https://www.netflix.com",
+        "https://www.okezone.com",
+        "https://www.vk.com"
     ]
     plain_scenario = PlainScenario(name="Plain", testbed=testbed, benchmarks=[])
     vpn_scenario = OpenVPNScenario(name="OpenVPN", testbed=testbed, benchmarks=[])
