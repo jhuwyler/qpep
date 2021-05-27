@@ -14,13 +14,13 @@ class RealWorldTestbed(object):
         logger.debug("Shutting Down Previous Testbed: local")
         subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_CLIENT") ,"down"], stderr=subprocess.DEVNULL)
         logger.debug("Shutting Down Previous Testbeds: remote")
-        subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_SERVER"), "-c", "cloud" ,"down"], stderr=subprocess.DEVNULL)
+        subprocess.call(["ssh", "julian_huwyler@cloud.jhuwyler.dev", "docker-compose", "-f", os.getenv("COMPOSE_SERVER") ,"down"], stderr=subprocess.DEVNULL)
 
         logger.debug("Starting local Testbed Containers")
         # Start the docker containers
         subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_CLIENT") , "up", "-d"])
         logger.debug("Starting remote Testbed Containers")
-        subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_SERVER"), "-c", "cloud"  , "up", "-d"])
+        subprocess.call(["ssh", "julian_huwyler@cloud.jhuwyler.dev", "docker-compose", "-f", os.getenv("COMPOSE_SERVER") , "up", "-d"])
 
         logger.success("Real-world Testbed Running")
 
@@ -28,12 +28,12 @@ class RealWorldTestbed(object):
         logger.debug("Shutting Down Testbed: local")
         subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_CLIENT") ,"down"], stderr=subprocess.DEVNULL)
         logger.debug("Shutting Down Testbeds: remote")
-        subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_SERVER"), "-c", "cloud" ,"down"], stderr=subprocess.DEVNULL)
+        subprocess.call(["ssh", "julian_huwyler@cloud.jhuwyler.dev", "docker-compose", "-f", os.getenv("COMPOSE_SERVER") ,"down"], stderr=subprocess.DEVNULL)
     
 
 if __name__ == '__main__':
     #subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_SERVER") ,"down"], stderr=subprocess.DEVNULL)
-    subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_SERVER"), "-c", "cloud" ,"up"], stderr=subprocess.DEVNULL)
+    #subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_SERVER"), "-c", "cloud" ,"up"], stderr=subprocess.DEVNULL)
     docker_client_cloud = docker.DockerClient(base_url="ssh://julian_huwyler@cloud.jhuwyler.dev")
     gateway = docker_client_cloud.containers.get(os.getenv('WS_GW_CONTAINER_NAME'))
     gateway.exec_run("iperf3 -s", detach=True)
