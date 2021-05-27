@@ -24,6 +24,7 @@ services:
     environment:
       GOPATH: /root/go
   tinyproxy:
+    container_name: ${WS_PROXY_CONTAINER_NAME:-ws-proxy}
     image: vimagick/tinyproxy
     ports:
       - "5001:8888"
