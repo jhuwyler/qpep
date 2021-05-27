@@ -1,6 +1,6 @@
 import sys
 import copy
-import time
+from datetime import datetime
 from statistics import mean
 import json
 from loguru import logger
@@ -61,15 +61,18 @@ def iperf_test_scenario():
     qpep_scenario = QPEPScenario(name="QPEP", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     scenarios = [qpep_scenario, distributed_pepsal_scenario, vpn_scenario, plain_scenario, pepsal_scenario]
     for scenario in scenarios:
-        if scenario.name == os.getenv("SCENARIO_NAME"):
-            logger.debug("Running iperf test scenario " + str(scenario.name))
-            iperf_scenario_results = {}
-            scenario.run_benchmarks()
-            for benchmark in scenario.benchmarks:
-                logger.debug("Running Iperf Test Scenario (", str(scenario.name), ") with file sizes: " + str(benchmark.file_sizes))
-                iperf_scenario_results = benchmark.results
-                print(iperf_scenario_results)
-            scenario.print_results()
+        logger.debug("Running iperf test scenario " + str(scenario.name))
+        iperf_scenario_results = {}
+        scenario.run_benchmarks()
+        for benchmark in scenario.benchmarks:
+            logger.debug("Running Iperf Test Scenario (", str(scenario.name), ") with file sizes: " + str(benchmark.file_sizes))
+            iperf_scenario_results = benchmark.results
+            print(iperf_scenario_results)
+        scenario.print_results()
+        now = datetime.now()
+        dt_string = now.strftime("%Y-%m-%d_%H-%M-%S")
+        filename = str(os.getenv("FILE_PATH")) + str(scenario.name) + "_" + dt_string + ".json"
+        benchmark.save_results(filename)
 
 def plt_test_scenario(testbed=None):
     if testbed is None:
@@ -103,14 +106,17 @@ def plt_test_scenario(testbed=None):
     qpep_scenario = QPEPScenario(name="QPEP", testbed=testbed, benchmarks=[])
     scenarios = [plain_scenario, pepsal_scenario, distributed_pepsal_scenario, qpep_scenario, vpn_scenario]
     for scenario in scenarios:
-        if scenario.name == os.getenv("SCENARIO_NAME"):
-            scenario.benchmarks = [SitespeedBenchmark(hosts=alexa_top_20[int(os.getenv("ALEXA_MIN")):int(os.getenv("ALEXA_MAX"))], scenario=scenario, iterations=int(os.getenv("PLT_ITERATIONS")), sub_iterations=int(os.getenv("PLT_SUB_ITERATIONS")))]
-            logger.debug("Running PLT test scenario " + str(scenario.name))
-            scenario.deploy_scenario()
-            scenario.run_benchmarks(deployed=True)
-            for benchmark in scenario.benchmarks:
-                print("Results for PLT " + str(scenario.name))
-                print(benchmark.results)
+        scenario.benchmarks = [SitespeedBenchmark(hosts=alexa_top_20[int(os.getenv("ALEXA_MIN")):int(os.getenv("ALEXA_MAX"))], scenario=scenario, iterations=int(os.getenv("PLT_ITERATIONS")), sub_iterations=int(os.getenv("PLT_SUB_ITERATIONS")))]
+        logger.debug("Running PLT test scenario " + str(scenario.name))
+        scenario.deploy_scenario()
+        scenario.run_benchmarks(deployed=True)
+        for benchmark in scenario.benchmarks:
+            print("Results for PLT " + str(scenario.name))
+            print(benchmark.results)
+            now = datetime.now()
+            dt_string = now.strftime("%Y-%m-%d_%H-%M-%S")
+            filename = str(os.getenv("FILE_PATH")) + str(scenario.name) + "_" + dt_string + ".json"
+            benchmark.save_results(filename)
     for scenario in scenarios:
         if scenario.name == os.getenv("SCENARIO_NAME"):
             scenario.print_results()

@@ -45,6 +45,10 @@ class Benchmark(ABC):
 
     def print_results(self):
         print(self.results)
+    
+    def save_results(self, filename):
+        with open(filename, 'w') as outfile:
+            json.dump(self.results, outfile)
 
 class IperfBenchmark(Benchmark):
     def __init__(self, file_sizes, reset_on_run=True, iterations=1):
