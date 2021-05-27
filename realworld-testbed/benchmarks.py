@@ -144,8 +144,7 @@ class SitespeedBenchmark(Benchmark):
     def run(self):
         logger.debug("Launching SiteSpeed.io Tests")
         docker_client = docker.from_env()
-        terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
-        sitespeed_workstation = docker_client.containers.get(os.getenv("SITESPEED_CONTAINER_NAME"))
+        sitespeed_workstation = docker_client.containers.get(os.getenv("WS_SITESPEED_CONTAINER_NAME"))
         sitespeed_workstation.exec_run("wget http://1.1.1.1")
         host_string = ''
         for i in range(0, self.iterations):

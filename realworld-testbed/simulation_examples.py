@@ -73,7 +73,7 @@ def iperf_test_scenario():
 
 def plt_test_scenario(testbed=None):
     if testbed is None:
-        testbed = BasicTestbed(host_ip=HOST_IP, display_number=0)
+        testbed = RealWorldTestbed()
     alexa_top_20 = [
     "https://www.google.com",
     "https://www.youtube.com",
@@ -122,10 +122,10 @@ if __name__ == '__main__':
     logger.add(sys.stderr, level="DEBUG")
 
     # Run Iperf Goodput Tests
-    iperf_test_scenario()
+    #iperf_test_scenario()
 
     # Run PLT Alexa Top 20 Test
-    #plt_test_scenario()
+    plt_test_scenario()
 
     #Next look at ACK decimation
     #ack_bundling_iperf_scenario()
