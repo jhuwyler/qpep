@@ -85,9 +85,9 @@ class IperfBenchmark(Benchmark):
             terminal_workstation.exec_run("pkill -9 iperf3")
             time.sleep(1)
         if with_timeout:
-            exit_code, output = terminal_workstation.exec_run("/usr/bin/timeout --signal=SIGINT " + str(timeout) +" /usr/bin/iperf3 --no-delay -c "  + str(os.getenv("GW_NETWORK_HEAD"))+ ".0.9 -R --json -n " + str(transfer_bytes))
+            exit_code, output = terminal_workstation.exec_run("/usr/bin/timeout --signal=SIGINT " + str(timeout) +" /usr/bin/iperf3 --no-delay -c "  + str(os.getenv("IPERF_SERVER_ADDRESS"))+ " -R --json -n " + str(transfer_bytes))
         else:
-            exit_code, output = terminal_workstation.exec_run("iperf3 --no-delay -c "  + str(os.getenv("GW_NETWORK_HEAD"))+ ".0.9 -R --json -n " + str(transfer_bytes))
+            exit_code, output = terminal_workstation.exec_run("iperf3 --no-delay -c "  + str(os.getenv("IPERF_SERVER_ADDRESS"))+ " -R --json -n " + str(transfer_bytes))
         json_string = output.decode('unicode_escape').rstrip('\n').replace('Linux\n', 'Linux') # there's an error in iperf3's json output here
         try:
             test_result = json.loads(json_string)
@@ -144,20 +144,15 @@ class SitespeedBenchmark(Benchmark):
     def run(self):
         logger.debug("Launching SiteSpeed.io Tests")
         docker_client = docker.from_env()
-        #terminal_workstation = docker_client.containers.get(os.getenv("SITESPEED_CONTAINER_NAME"))
-        #terminal_workstation.exec_run("ip route del default")
-        #terminal_workstation.exec_run("ip route add default via " + str(os.getenv("ST_NETWORK_HEAD"))+".0.4")
-        
+        terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
+        sitespeed_workstation = docker_client.containers.get(os.getenv("SITESPEED_CONTAINER_NAME"))
+        sitespeed_workstation.exec_run("wget http://1.1.1.1")
         host_string = ''
         for i in range(0, self.iterations):
-            terminal_workstation = docker_client.containers.get(os.getenv("SITESPEED_CONTAINER_NAME"))
-            #Connect sitespeed container to satellite network
-            terminal_workstation.exec_run("ip route del default")
-            terminal_workstation.exec_run("ip route add default via " + str(os.getenv("ST_NETWORK_HEAD"))+".0.4")
-            terminal_workstation.exec_run("wget http://1.1.1.1") #use this to warm up vpns/peps
+            sitespeed_workstation.exec_run("wget http://1.1.1.1") #use this to warm up vpns/peps
             for host in self.hosts:
                 host_string = host + " "
-                host_result = terminal_workstation.exec_run('/usr/src/app/bin/browsertime.js -n ' + str(self.sub_iterations) +' --headless --browser firefox --cacheClearRaw --firefox.preference network.dns.disableIPv6:true --video=false --visualMetrics=false --visualElements=false ' + str(host_string))
+                host_result = sitespeed_workstation.exec_run('/usr/src/app/bin/browsertime.js -n ' + str(self.sub_iterations) +' --headless --browser firefox --cacheClearRaw --firefox.preference network.dns.disableIPv6:true --video=false --visualMetrics=false --visualElements=false ' + str(host_string))
                 matches = re.findall('Load: ([0-9.]+)([ms])', str(host_result))
                 if self.sub_iterations > 0:
                     matches = matches[:-1] # the last match is the average load time, which we don't want mixing up our stats
