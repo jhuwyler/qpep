@@ -148,16 +148,20 @@ class PEPsalScenario(Scenario):
             super().deploy_scenario()
         logger.debug("Starting PEPsal Scenario")
         docker_client = docker.from_env()
-
+        terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
+        sitespeed_workstation = docker_client.containers.get(os.getenv("WS_SITESPEED_CONTAINER_NAME"))
+        logger.debug("Configuring proxy on Terminal")
+        terminal_workstation.exec_run("./tmp/configure_proxy.sh")
+        logger.debug("Configuring proxy on Sitespeed")
+        sitespeed_workstation.exec_run("./tmp/configure_proxy.sh")
         if self.terminal and self.gateway:
             logger.debug("Deploying PEPsal in Distributed Mode")
 
         if self.terminal:
             logger.debug("Deploying PEPsal on Terminal Endpoint")
-            terminal_client = docker_client.containers.get(os.getenv("ST_CONTAINER_NAME"))
-            terminal_client.exec_run("bash ./tmp/config/launch_pepsal.sh")
+            terminal_workstation.exec_run("bash ./tmp/config/launch_pepsal.sh")
         if self.gateway:
             logger.debug("Deploying PEPsal on Gateway Endpoint")
             docker_client_cloud = docker.DockerClient(base_url="ssh://julian_huwyler@cloud.jhuwyler.dev")
             gateway_workstation = docker_client_cloud.containers.get(os.getenv('WS_GW_CONTAINER_NAME'))
-            gateway_client.exec_run("bash ./tmp/launch_pepsal.sh")
+            gateway_workstation.exec_run("bash ./tmp/launch_pepsal.sh")
