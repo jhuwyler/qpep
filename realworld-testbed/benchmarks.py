@@ -6,7 +6,8 @@ import docker
 import json
 import time
 import re
-
+from pymongo import MongoClient
+from datetime import datetime
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -46,9 +47,26 @@ class Benchmark(ABC):
     def print_results(self):
         print(self.results)
     
-    def save_results(self, filename):
+    def save_results_to_file(self, filename):
         with open(filename, 'w') as outfile:
             json.dump(self.results, outfile)
+
+    def save_results_to_db(self, collection_name, login_file='../../Documents/db-login.txt'):
+        with open(login_file) as file:
+            login = file.readlines()[0]
+        client = MongoClient('mongodb://'+ login + '@localhost:27017/?authSource=qpep-database')
+        db = client['qpep-database']
+        data = self.results
+        now = datetime.now()
+        dt_string = now.strftime("%Y-%m-%d_%H-%M-%S")
+        data.update({"date": dt_string})
+
+        # MongoDB does not accept '.' in keys so we need to replace them
+        new_data = {}
+        for key in data.keys():
+            new_key = key.replace(".","-")
+            new_data[new_key] = data[key]
+        db[collection_name].insert_one(new_data)
 
 class IperfBenchmark(Benchmark):
     def __init__(self, file_sizes, reset_on_run=True, iterations=1):
