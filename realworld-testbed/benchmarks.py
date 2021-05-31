@@ -51,7 +51,7 @@ class Benchmark(ABC):
         with open(filename, 'w') as outfile:
             json.dump(self.results, outfile)
 
-    def save_results_to_db(self, collection_name, login_file='../../Documents/db-login.txt'):
+    def save_results_to_db(self, collection_name, login_file=str(os.getenv("LOGIN_FILE"))):
         with open(login_file) as file:
             login = file.readlines()[0]
         client = MongoClient('mongodb://'+ login + '@localhost:27017/?authSource=qpep-database')
