@@ -58,8 +58,7 @@ class Benchmark(ABC):
         db = client['qpep-database']
         data = self.results
         now = datetime.now()
-        dt_string = now.strftime("%Y-%m-%d_%H-%M-%S")
-        data.update({"date": dt_string})
+        data.update({"date": now})
 
         # MongoDB does not accept '.' in keys so we need to replace them
         new_data = {}
