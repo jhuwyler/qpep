@@ -1,0 +1,57 @@
+version: '2.4'
+services:
+  ws-gw:
+    container_name: server-ws
+    #image: pavja2/qpep:ws-gw
+    build: ws-gw/
+    ports:
+      - "0.0.0.0:4242:4242/udp"
+      - "0.0.0.0:4242:4242/tcp"
+      - "3141"
+      - "5358"
+      - "5926"
+      - "0.0.0.0:5201:5201"
+    networks:
+      gwlan:
+        ipv4_address: 172.33.0.9
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    volumes:
+      - "../../src/:/root/go/src"
+  tinyproxy:
+    container_name: server-proxy
+    image: vimagick/tinyproxy
+    ports:
+      - "5001:8888"
+    restart: always
+    networks:
+      gwlan:
+        ipv4_address: 172.33.0.5
+  ws-ovpn:
+    container_name: server-ovpn
+    #image: pavja2/qpep:ws-ovpn
+    build: ws-ovpn/
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "0.0.0.0:${WS_OVPN_PORT:-1194}:1194/udp"
+    volumes:
+      - ./ws-ovpn/:/etc/openvpn
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6= 1
+    networks:
+      gwlan:
+        ipv4_address: 172.33.0.10
+networks:
+  gwlan:
+    name: qpep-server-lan
+    driver: bridge
+    enable_ipv6: true
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.33.0.0/24
+        - subnet: 2001:660:7702:142::1/64
