@@ -8,19 +8,14 @@ services:
       - "5358"
       - "5926"
     volumes:
-      - ../packet-captures/:/home/pcaps
-    environment:
-      GOPATH: /root/go
+      - "../../src/:/root/go/src"
     networks:
       stlan:
         ipv4_address: 172.30.0.4
         priority: 1000
     privileged: true
     cap_add:
-      - ALL
       - NET_ADMIN
-    devices:
-      - /dev/net/tun
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
   ws-st:
@@ -34,6 +29,16 @@ services:
       - NET_ADMIN
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
+  sitespeed:
+    container_name: qpep-sitespeed-ubuntu-rw
+    build: sitespeed/
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    networks:
+      stlan:
+        ipv4_address: 172.30.0.15
 networks:
   stlan:
     name: qpep-stlan-ubuntu-rw
