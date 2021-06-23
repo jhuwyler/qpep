@@ -50,7 +50,7 @@ def iperf_UDP_test_scenario():
     # experience these costs once, when the customer starts the respective applications
     iperf_file_sizes = [25*1000, 50*1000, 100*1000, 150*1000]+[(i/4)*1000000 for i in range(1, 47)]
     iperf_file_sizes.sort()
-    benchmarks = [IperfBenchmark(file_sizes=iperf_file_sizes[1:2], iterations=1)]
+    benchmarks = [IperfUDPBenchmark(file_sizes=iperf_file_sizes[1:2], iterations=1)]
     plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     vpn_scenario = OpenVPNScenario(name="ovpn", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     pepsal_scenario = PEPsalScenario(name="pepsal", testbed=testbed, benchmarks=copy.deepcopy(benchmarks), terminal=True, gateway=False)
