@@ -7,6 +7,7 @@ import json
 import time
 import re
 from pymongo import MongoClient
+import pymongo
 from datetime import datetime
 import os
 from dotenv import load_dotenv
@@ -52,10 +53,6 @@ class Benchmark(ABC):
             json.dump(self.results, outfile)
 
     def save_results_to_db(self, collection_name, login_file=str(os.getenv("LOGIN_FILE"))):
-        with open(login_file) as file:
-            login = file.readlines()[0]
-        client = MongoClient('mongodb://'+ login + '@localhost:27018/?authSource=qpep-database')
-        db = client['qpep-database']
         data = self.results
         now = datetime.now()
         data.update({"date": now})
@@ -65,7 +62,24 @@ class Benchmark(ABC):
         for key in data.keys():
             new_key = key.replace(".","-")
             new_data[new_key] = data[key]
-        db[collection_name].insert_one(new_data)
+        with open(login_file) as file:
+            login = file.readlines()[0]
+        try:
+            client = MongoClient('mongodb://'+ login + '@localhost:27018/?authSource=qpep-database', connectTimeoutMS=3000,serverSelectionTimeoutMS=5000)
+            client.server_info()
+        except pymongo.errors.ServerSelectionTimeoutError:
+            print('Could not connect to DB Server via login server')
+            try:
+                client = MongoClient('mongodb://'+ login + '@mongodb01.ee.ethz.ch:27017/?authSource=qpep-database', connectTimeoutMS=3000,serverSelectionTimeoutMS=5000)
+                client.server_info()
+            except pymongo.errors.ServerSelectionTimeoutError:
+                print('Could not connect to DB Server directly')
+            else:
+                db = client['qpep-database']
+                db[collection_name].insert_one(new_data)
+        else:
+            db = client['qpep-database']
+            db[collection_name].insert_one(new_data)
 
 class IperfBenchmark(Benchmark):
     def __init__(self, file_sizes, reset_on_run=True, iterations=1):
@@ -308,3 +322,13 @@ class SpeedtestBenchmark(Benchmark):
             "sent_bps": json_data["upload"],
             "received_bps": json_data["download"]
         }
+
+if __name__ == "__main__":
+    login_file = '/home/lab/Documents/db-login.txt'
+    with open(login_file) as file:
+        login = file.readlines()[0]
+    try:
+        client = MongoClient('mongodb://'+ login + '@localhost:27017/?authSource=qpep-database', connectTimeoutMS=3000,serverSelectionTimeoutMS=5000)
+        client.server_info()
+    except pymongo.errors.ServerSelectionTimeoutError:
+        print('Could not connect to DB via LoginServer')
