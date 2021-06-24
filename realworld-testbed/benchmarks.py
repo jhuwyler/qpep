@@ -167,7 +167,22 @@ class IperfBenchmark(Benchmark):
             print(result_key, "received_bps:", mean(self.results[result_key]["received_bps"])/ 1000000)
     
     def save_results_to_db(self, scenario_name, testbed_name):
-        return super().save_results_to_db(scenario_name, testbed_name)
+        data ={}
+        now = datetime.now()
+        docker_client = docker.from_env()
+        terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
+        ping = terminal_workstation.exec_run("ping google.ch")
+        print(ping)
+        data.update({
+            "date": now,
+            "testbed": testbed_name,
+            "scenario": scenario_name,
+            "ping": ping,
+            "measurements": self.make_keys_mongoDB_compatible(self.results)
+        })
+        print(data)
+
+
  
 class IperfUDPBenchmark(Benchmark):
     def __init__(self, file_sizes, bw_limit="50M", iterations=1):
@@ -329,11 +344,5 @@ class SpeedtestBenchmark(Benchmark):
         }
 
 if __name__ == "__main__":
-    login_file = '/home/lab/Documents/db-login.txt'
-    with open(login_file) as file:
-        login = file.readlines()[0]
-    try:
-        client = MongoClient('mongodb://'+ login + '@localhost:27017/?authSource=qpep-database', connectTimeoutMS=3000,serverSelectionTimeoutMS=5000)
-        client.server_info()
-    except pymongo.errors.ServerSelectionTimeoutError:
-        print('Could not connect to DB via LoginServer')
+    bencchmark = IperfBenchmark()
+    Benchmark.save_results_to_db("test","realworld")
