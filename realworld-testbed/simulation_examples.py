@@ -121,8 +121,8 @@ def plt_test_scenario(testbed=None):
 if __name__ == '__main__':
     # These functions draw on parameters from the .env file to determine which scenarios to run and which portions of the scenario. See the QPEP README for some advice on using .env to run simulations in parallel
     logger.remove()
-    logger.add(sys.stderr, level="SUCCESS")
-    #logger.add(sys.stderr, level="DEBUG")
+    #logger.add(sys.stderr, level="SUCCESS")
+    logger.add(sys.stderr, level="DEBUG")
 
     # Run Iperf Goodput Tests
     iperf_test_scenario()
