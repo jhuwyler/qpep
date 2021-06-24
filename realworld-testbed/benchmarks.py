@@ -171,8 +171,10 @@ class IperfBenchmark(Benchmark):
         now = datetime.now()
         docker_client = docker.from_env()
         terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
-        ping = terminal_workstation.exec_run("ping google.ch")
+        exit_code, output = terminal_workstation.exec_run("ping -c 1 google.ch")#grep -oP 'time=\K[0-9]+'"
+        ping = re.match('time=\Z[0-9]+', str(output))
         print(ping)
+        print(self.results)
         data.update({
             "date": now,
             "testbed": testbed_name,
@@ -344,5 +346,5 @@ class SpeedtestBenchmark(Benchmark):
         }
 
 if __name__ == "__main__":
-    bencchmark = IperfBenchmark()
-    Benchmark.save_results_to_db("test","realworld")
+    benchmark = IperfBenchmark(file_sizes=[10000],iterations=1)
+    benchmark.save_results_to_db("test","realworld")
