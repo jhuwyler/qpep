@@ -51,17 +51,7 @@ class Benchmark(ABC):
     def save_results_to_file(self, filename):
         with open(filename, 'w') as outfile:
             json.dump(self.results, outfile)
-
-    def save_results_to_db(self, collection_name, login_file=str(os.getenv("LOGIN_FILE"))):
-        data = self.results
-        now = datetime.now()
-        data.update({"date": now})
-        data.update({"name": self.name})
-        # MongoDB does not accept '.' in keys so we need to replace them
-        new_data = {}
-        for key in data.keys():
-            new_key = key.replace(".","-")
-            new_data[new_key] = data[key]
+    def push_to_db(self, collection_name, data, login_file=str(os.getenv("LOGIN_FILE"))):
         with open(login_file) as file:
             login = file.readlines()[0]
         try:
@@ -76,10 +66,22 @@ class Benchmark(ABC):
                 print('Could not connect to DB Server directly')
             else:
                 db = client['qpep-database']
-                db[collection_name].insert_one(new_data)
+                db[collection_name].insert_one(data)
         else:
             db = client['qpep-database']
-            db[collection_name].insert_one(new_data)
+            db[collection_name].insert_one(data)
+    
+    @abstractmethod
+    def save_results_to_db(self, scenario_name, testbed_name):
+        pass
+
+    def make_keys_mongoDB_compatible(data):
+        # MongoDB does not accept '.' in keys so we need to replace them
+        new_data = {}
+        for key in data.keys():
+            new_key = key.replace(".","-")
+            new_data[new_key] = data[key]
+        return new_data
 
 class IperfBenchmark(Benchmark):
     def __init__(self, file_sizes, reset_on_run=True, iterations=1):
@@ -163,6 +165,9 @@ class IperfBenchmark(Benchmark):
         for result_key in self.results.keys():
             print(result_key, "sent_bps:", mean(self.results[result_key]["sent_bps"]) / 1000000)
             print(result_key, "received_bps:", mean(self.results[result_key]["received_bps"])/ 1000000)
+    
+    def save_results_to_db(self, scenario_name, testbed_name):
+        return super().save_results_to_db(scenario_name, testbed_name)
  
 class IperfUDPBenchmark(Benchmark):
     def __init__(self, file_sizes, bw_limit="50M", iterations=1):
