@@ -75,7 +75,7 @@ class Benchmark(ABC):
     def save_results_to_db(self, scenario_name, testbed_name):
         pass
 
-    def make_keys_mongoDB_compatible(data):
+    def make_keys_mongoDB_compatible(self, data):
         # MongoDB does not accept '.' in keys so we need to replace them
         new_data = {}
         for key in data.keys():
@@ -171,18 +171,20 @@ class IperfBenchmark(Benchmark):
         now = datetime.now()
         docker_client = docker.from_env()
         terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
-        exit_code, output = terminal_workstation.exec_run("ping -c 1 google.ch")#grep -oP 'time=\K[0-9]+'"
-        ping = re.match('time=\Z[0-9]+', str(output))
-        print(ping)
+        exit_code, output = terminal_workstation.exec_run("ping -c 1 google.ch")
+        string = output.decode()
+        ping = re.findall("time=([0-9]+)", string)[0]
+        print("Ping[ms]:"+ping)
         print(self.results)
         data.update({
             "date": now,
             "testbed": testbed_name,
             "scenario": scenario_name,
-            "ping": ping,
+            "ping": int(ping),
             "measurements": self.make_keys_mongoDB_compatible(self.results)
         })
         print(data)
+        self.push_to_db("iperf_TCP",data)
 
 
  
@@ -211,6 +213,7 @@ class IperfUDPBenchmark(Benchmark):
             print("Interim Results (Iter:", i+1, " of ", self.iterations, "):", self.results)
 
     def run_iperf_test(self, transfer_bytes, bw_limit, with_timeout=True, timeout=600):
+        self.bw_limit = bw_limit
         logger.debug("Starting iperf server")
         docker_client_cloud = docker.DockerClient(base_url="ssh://julian_huwyler@cloud.jhuwyler.dev")
         gateway_workstation = docker_client_cloud.containers.get(os.getenv('WS_GW_CONTAINER_NAME'))
@@ -270,6 +273,26 @@ class IperfUDPBenchmark(Benchmark):
         for result_key in self.results.keys():
             print(result_key, "bits_per_second:", mean(self.results[result_key]["bits_per_second"]) / 1000000)
             print(result_key, "lost_percent:", mean(self.results[result_key]["lost_percent"]))
+            
+    def save_results_to_db(self, scenario_name, testbed_name):
+        data ={}
+        now = datetime.now()
+        docker_client = docker.from_env()
+        terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
+        exit_code, output = terminal_workstation.exec_run("ping -c 1 google.ch")
+        string = output.decode()
+        ping = re.findall("time=([0-9]+)", string)[0]
+        print("Ping: "+ping)
+        data.update({
+            "date": now,
+            "testbed": testbed_name,
+            "scenario": scenario_name,
+            "ping": ping,
+            "bw_limit": self.bw_limit,
+            "measurements": self.make_keys_mongoDB_compatible(self.results)
+        })
+        print(data)
+        self.push_to_db("iperf_UDP",data)
 class SitespeedBenchmark(Benchmark):
     def __init__(self, hosts=alexa_top_20, iterations=1, average_only=False, scenario=None, sub_iterations=1):
         self.hosts = hosts
@@ -325,6 +348,25 @@ class SitespeedBenchmark(Benchmark):
         #print("Load time measurements: ", self.results)
         print("Failed load count: ", self.errors)
 
+    def save_results_to_db(self, scenario_name, testbed_name):
+        data ={}
+        now = datetime.now()
+        docker_client = docker.from_env()
+        terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
+        exit_code, output = terminal_workstation.exec_run("ping -c 1 google.ch")
+        string = output.decode()
+        ping = re.findall("time=([0-9]+)", string)[0]
+        print("Ping: "+ping)
+        data.update({
+            "date": now,
+            "testbed": testbed_name,
+            "scenario": scenario_name,
+            "ping": ping,
+            "measurements": self.make_keys_mongoDB_compatible(self.results)
+        })
+        print(data)
+        self.push_to_db("sitespeed",data)
+
 class SpeedtestBenchmark(Benchmark):
     def __init__(self, server_id=13658):
         self.server_id = server_id
@@ -346,5 +388,5 @@ class SpeedtestBenchmark(Benchmark):
         }
 
 if __name__ == "__main__":
-    benchmark = IperfBenchmark(file_sizes=[10000],iterations=1)
+    benchmark = SitespeedBenchmark()
     benchmark.save_results_to_db("test","realworld")
