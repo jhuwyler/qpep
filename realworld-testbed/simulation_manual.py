@@ -50,6 +50,8 @@ def iperf_UDP_test_scenario():
     # experience these costs once, when the customer starts the respective applications
     iperf_file_sizes = [25*1000, 50*1000, 100*1000, 150*1000]+[(i/4)*1000000 for i in range(1, 47)]
     iperf_file_sizes.sort()
+    with open(str(os.getenv("TESTBED_FILE"))) as file:
+        testbed_name = file.readlines()[0]
     benchmarks = [IperfUDPBenchmark(file_sizes=iperf_file_sizes[1:2], iterations=1)]
     plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     vpn_scenario = OpenVPNScenario(name="ovpn", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
@@ -66,8 +68,7 @@ def iperf_UDP_test_scenario():
             iperf_scenario_results = benchmark.results
             print(iperf_scenario_results)
         scenario.print_results()
-        collection_name = 'iperf-' + str(scenario.name)
-        benchmark.save_results_to_db(collection_name)
+        benchmark.save_results_to_db(str(scenario.name),testbed_name)
 def plt_test_scenario(testbed=None):
     if testbed is None:
         testbed = RealWorldTestbed()
@@ -93,6 +94,8 @@ def plt_test_scenario(testbed=None):
         "https://www.okezone.com",
         "https://www.vk.com"
     ]
+    with open(str(os.getenv("TESTBED_FILE"))) as file:
+        testbed_name = file.readlines()[0]
     plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=[])
     vpn_scenario = OpenVPNScenario(name="ovpn", testbed=testbed, benchmarks=[])
     pepsal_scenario = PEPsalScenario(name="pepsal", testbed=testbed, benchmarks=[], terminal=True, gateway=False)
@@ -107,8 +110,7 @@ def plt_test_scenario(testbed=None):
         for benchmark in scenario.benchmarks:
             print("Results for PLT " + str(scenario.name))
             print(benchmark.results)
-            collection_name = 'sitespeed-' + str(scenario.name)
-            benchmark.save_results_to_db(collection_name)
+            benchmark.save_results_to_db(str(scenario.name),testbed_name)
     for scenario in scenarios:
         if scenario.name == os.getenv("SCENARIO_NAME"):
             scenario.print_results()
