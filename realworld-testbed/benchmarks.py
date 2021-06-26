@@ -184,7 +184,8 @@ class IperfBenchmark(Benchmark):
             "measurements": self.make_keys_mongoDB_compatible(self.results)
         })
         print(data)
-        self.push_to_db("iperf_TCP",data)
+        if data["measurements"] != {}:
+            self.push_to_db("iperf_TCP",data)
 
 
  
@@ -292,7 +293,8 @@ class IperfUDPBenchmark(Benchmark):
             "measurements": self.make_keys_mongoDB_compatible(self.results)
         })
         print(data)
-        self.push_to_db("iperf_UDP",data)
+        if data["measurements"] != {}:
+            self.push_to_db("iperf_UDP",data)
 class SitespeedBenchmark(Benchmark):
     def __init__(self, hosts=alexa_top_20, iterations=1, average_only=False, scenario=None, sub_iterations=1):
         self.hosts = hosts
@@ -365,7 +367,8 @@ class SitespeedBenchmark(Benchmark):
             "measurements": self.make_keys_mongoDB_compatible(self.results)
         })
         print(data)
-        self.push_to_db("sitespeed",data)
+        if data["measurements"] != {}:
+            self.push_to_db("sitespeed",data)
 
 class SpeedtestBenchmark(Benchmark):
     def __init__(self, server_id=13658):

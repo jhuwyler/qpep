@@ -22,13 +22,15 @@ def iperf_test_scenario():
     # experience these costs once, when the customer starts the respective applications
     iperf_file_sizes = [25*1000, 50*1000, 100*1000, 150*1000]+[(i/4)*1000000 for i in range(1, 47)]
     iperf_file_sizes.sort()
-    benchmarks = [IperfBenchmark(file_sizes=iperf_file_sizes[int(os.getenv("IPERF_MIN_SIZE_INDEX")):int(os.getenv("IPERF_MAX_SIZE_INDEX"))], iterations=int(os.getenv("IPERF_ITERATIONS")))]
+    with open(str(os.getenv("TESTBED_FILE"))) as file:
+        testbed_name = file.readlines()[0]
+    benchmarks = [IperfBenchmark(file_sizes=iperf_file_sizes[1:2], iterations=1)]
     plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     vpn_scenario = OpenVPNScenario(name="ovpn", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     pepsal_scenario = PEPsalScenario(name="pepsal", testbed=testbed, benchmarks=copy.deepcopy(benchmarks), terminal=True, gateway=False)
     distributed_pepsal_scenario = PEPsalScenario(name="dist_pepsal", gateway=True, terminal=True, testbed=testbed,benchmarks=copy.deepcopy(benchmarks))
     qpep_scenario = QPEPScenario(name="qpep", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
-    scenarios = [qpep_scenario, distributed_pepsal_scenario, vpn_scenario, plain_scenario, pepsal_scenario]
+    scenarios = [plain_scenario, qpep_scenario, distributed_pepsal_scenario, vpn_scenario, pepsal_scenario]
     for scenario in scenarios:
         logger.debug("Running iperf test scenario " + str(scenario.name))
         iperf_scenario_results = {}
@@ -38,8 +40,7 @@ def iperf_test_scenario():
             iperf_scenario_results = benchmark.results
             print(iperf_scenario_results)
         scenario.print_results()
-        collection_name = 'iperf-' + str(scenario.name)
-        benchmark.save_results_to_db(collection_name)
+        benchmark.save_results_to_db(str(scenario.name),testbed_name)
 
 def iperf_UDP_test_scenario():
     # Simulates IPERF transfers at different file sizes
@@ -103,7 +104,7 @@ def plt_test_scenario(testbed=None):
     qpep_scenario = QPEPScenario(name="qpep", testbed=testbed, benchmarks=[])
     scenarios = [plain_scenario, pepsal_scenario, distributed_pepsal_scenario, qpep_scenario, vpn_scenario]
     for scenario in scenarios:
-        scenario.benchmarks = [SitespeedBenchmark(hosts=alexa_top_20[int(os.getenv("ALEXA_MIN")):int(os.getenv("ALEXA_MAX"))], scenario=scenario, iterations=int(os.getenv("PLT_ITERATIONS")), sub_iterations=int(os.getenv("PLT_SUB_ITERATIONS")))]
+        scenario.benchmarks = [SitespeedBenchmark(hosts=alexa_top_20[0:3], scenario=scenario, iterations=1, sub_iterations=1)]
         logger.debug("Running PLT test scenario " + str(scenario.name))
         scenario.deploy_scenario()
         scenario.run_benchmarks(deployed=True)
@@ -123,10 +124,10 @@ if __name__ == '__main__':
 
     # Run Iperf Goodput Tests
     #iperf_test_scenario()
-    iperf_UDP_test_scenario()
+    #iperf_UDP_test_scenario()
 
     # Run PLT Alexa Top 20 Test
-    #plt_test_scenario()
+    plt_test_scenario()
 
     #Next look at ACK decimation
     #ack_bundling_iperf_scenario()
