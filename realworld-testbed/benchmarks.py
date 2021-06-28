@@ -288,7 +288,7 @@ class IperfUDPBenchmark(Benchmark):
             "date": now,
             "testbed": testbed_name,
             "scenario": scenario_name,
-            "ping": ping,
+            "ping": int(ping),
             "bw_limit": self.bw_limit,
             "measurements": self.make_keys_mongoDB_compatible(self.results)
         })
@@ -363,7 +363,7 @@ class SitespeedBenchmark(Benchmark):
             "date": now,
             "testbed": testbed_name,
             "scenario": scenario_name,
-            "ping": ping,
+            "ping": int(ping),
             "measurements": self.make_keys_mongoDB_compatible(self.results)
         })
         print(data)
