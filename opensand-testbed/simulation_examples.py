@@ -80,7 +80,7 @@ def iperf_UDP_test_scenario():
     # experience these costs once, when the customer starts the respective applications
     iperf_file_sizes = [25*1000, 50*1000, 100*1000, 150*1000]+[(i/4)*1000000 for i in range(1, 47)]
     iperf_file_sizes.sort()
-    benchmarks = [IperfUDPBenchmark(file_sizes=iperf_file_sizes[int(os.getenv("IPERF_MIN_SIZE_INDEX")):int(os.getenv("IPERF_MAX_SIZE_INDEX"))], bw_limit="400M", iterations=int(os.getenv("IPERF_ITERATIONS")))]
+    benchmarks = [IperfUDPBenchmark(file_sizes=iperf_file_sizes[4:], bw_limit="50M", iterations=2)]
     plain_scenario = PlainScenario(name="Plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     vpn_scenario = OpenVPNScenario(name="OpenVPN", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     pepsal_scenario = PEPsalScenario(name="PEPSal", testbed=testbed, benchmarks=copy.deepcopy(benchmarks), terminal=True, gateway=False)
@@ -96,6 +96,7 @@ def iperf_UDP_test_scenario():
             iperf_scenario_results = benchmark.results
             print(iperf_scenario_results)
         scenario.print_results()
+        benchmark.save_results_to_db(str(scenario.name),"opensand")
 def plt_test_scenario(testbed=None):
     if testbed is None:
         testbed = BasicTestbed(host_ip=HOST_IP, display_number=0)

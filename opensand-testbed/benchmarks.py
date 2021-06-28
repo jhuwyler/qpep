@@ -6,7 +6,9 @@ import docker
 import json
 import time
 import re
-
+from pymongo import MongoClient
+import pymongo
+from datetime import datetime
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -45,6 +47,38 @@ class Benchmark(ABC):
 
     def print_results(self):
         print(self.results)
+    
+    def push_to_db(self, collection_name, data, login_file="db-login.txt"):
+        with open(login_file) as file:
+            login = file.readlines()[0]
+        try:
+            client = MongoClient('mongodb://'+ login + '@localhost:27018/?authSource=qpep-database', connectTimeoutMS=3000,serverSelectionTimeoutMS=5000)
+            client.server_info()
+        except pymongo.errors.ServerSelectionTimeoutError:
+            print('Could not connect to DB Server via login server')
+            try:
+                client = MongoClient('mongodb://'+ login + '@mongodb01.ee.ethz.ch:27017/?authSource=qpep-database', connectTimeoutMS=3000,serverSelectionTimeoutMS=5000)
+                client.server_info()
+            except pymongo.errors.ServerSelectionTimeoutError:
+                print('Could not connect to DB Server directly')
+            else:
+                db = client['qpep-database']
+                db[collection_name].insert_one(data)
+        else:
+            db = client['qpep-database']
+            db[collection_name].insert_one(data)
+    
+    @abstractmethod
+    def save_results_to_db(self, scenario_name, testbed_name):
+        pass
+
+    def make_keys_mongoDB_compatible(self, data):
+        # MongoDB does not accept '.' in keys so we need to replace them
+        new_data = {}
+        for key in data.keys():
+            new_key = key.replace(".","-")
+            new_data[new_key] = data[key]
+        return new_data
 
 class IperfBenchmark(Benchmark):
     def __init__(self, file_sizes, reset_on_run=True, iterations=1):
@@ -127,6 +161,27 @@ class IperfBenchmark(Benchmark):
         for result_key in self.results.keys():
             print(result_key, "sent_Mbps:", mean(self.results[result_key]["sent_bps"]) / 1000000)
             print(result_key, "received_Mbps:", mean(self.results[result_key]["received_bps"])/ 1000000)
+    
+    def save_results_to_db(self, scenario_name, testbed_name):
+        data ={}
+        now = datetime.now()
+        docker_client = docker.from_env()
+        terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
+        exit_code, output = terminal_workstation.exec_run("ping -c 1 google.ch")
+        string = output.decode()
+        ping = re.findall("time=([0-9]+)", string)[0]
+        print("Ping[ms]:"+ping)
+        print(self.results)
+        data.update({
+            "date": now,
+            "testbed": testbed_name,
+            "scenario": scenario_name,
+            "ping": int(ping),
+            "measurements": self.make_keys_mongoDB_compatible(self.results)
+        })
+        print(data)
+        if data["measurements"] != {}:
+            self.push_to_db("iperf_TCP",data)
  
 class IperfUDPBenchmark(Benchmark):
     def __init__(self, file_sizes, bw_limit="50M", iterations=1):
@@ -211,6 +266,27 @@ class IperfUDPBenchmark(Benchmark):
         for result_key in self.results.keys():
             print(result_key, "Mbits_per_second:", mean(self.results[result_key]["bits_per_second"]) / 1000000)
             print(result_key, "lost_percent:", mean(self.results[result_key]["lost_percent"]))
+    
+    def save_results_to_db(self, scenario_name, testbed_name):
+        data ={}
+        now = datetime.now()
+        docker_client = docker.from_env()
+        terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
+        exit_code, output = terminal_workstation.exec_run("ping -c 1 google.ch")
+        string = output.decode()
+        ping = re.findall("time=([0-9]+)", string)[0]
+        print("Ping: "+ping)
+        data.update({
+            "date": now,
+            "testbed": testbed_name,
+            "scenario": scenario_name,
+            "ping": ping,
+            "bw_limit": self.bw_limit,
+            "measurements": self.make_keys_mongoDB_compatible(self.results)
+        })
+        print(data)
+        if data["measurements"] != {}:
+            self.push_to_db("iperf_UDP",data)
 
 class SitespeedBenchmark(Benchmark):
     def __init__(self, hosts=alexa_top_20, iterations=1, average_only=False, scenario=None, sub_iterations=1):
