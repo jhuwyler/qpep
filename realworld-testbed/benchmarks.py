@@ -109,7 +109,7 @@ class IperfBenchmark(Benchmark):
 
     def run_iperf_test(self, transfer_bytes, reset_on_run, with_timeout=True, timeout=600):
         logger.debug("Starting iperf server")
-        docker_client_cloud = docker.DockerClient(base_url="ssh://julian_huwyler@cloud.jhuwyler.dev")
+        docker_client_cloud = docker.DockerClient(base_url="ssh://"+os.getenv("DOCKER_REMOTE_URL"))
         gateway_workstation = docker_client_cloud.containers.get(os.getenv('WS_GW_CONTAINER_NAME'))
         if reset_on_run:
             gateway_workstation.exec_run("pkill -9 iperf3")
@@ -216,7 +216,7 @@ class IperfUDPBenchmark(Benchmark):
     def run_iperf_test(self, transfer_bytes, bw_limit, with_timeout=True, timeout=600):
         self.bw_limit = bw_limit
         logger.debug("Starting iperf server")
-        docker_client_cloud = docker.DockerClient(base_url="ssh://julian_huwyler@cloud.jhuwyler.dev")
+        docker_client_cloud = docker.DockerClient(base_url="ssh://"+os.getenv("DOCKER_REMOTE_URL"))
         gateway_workstation = docker_client_cloud.containers.get(os.getenv('WS_GW_CONTAINER_NAME'))
         
         gateway_workstation.exec_run("pkill -9 iperf3")

@@ -69,7 +69,7 @@ class QPEPScenario(Scenario):
         terminal_container.exec_run("bash ./tmp/config/configure_qpep.sh")
 
         logger.debug("Configuring Gateway Side of QPEP Proxy")
-        docker_client_cloud = docker.DockerClient(base_url="ssh://julian_huwyler@cloud.jhuwyler.dev")
+        docker_client_cloud = docker.DockerClient(base_url="ssh://"+os.getenv("DOCKER_REMOTE_URL"))
         gateway_workstation = docker_client_cloud.containers.get(os.getenv('WS_GW_CONTAINER_NAME'))
 
         if testbed_up:
@@ -78,7 +78,7 @@ class QPEPScenario(Scenario):
             terminal_container.exec_run("pkill -9 main")
 
         logger.debug("Launching QPEP Client")
-        terminal_container.exec_run("go run /root/go/src/qpep/main.go -client -gateway cloud.jhuwyler.dev ", detach=True)
+        terminal_container.exec_run("go run /root/go/src/qpep/main.go -client -gateway "+os.getenv("QPEP_SRV_URL"), detach=True)
         logger.debug("Launching QPEP Gateway")
         gateway_workstation.exec_run("go run /root/go/src/qpep/main.go", detach=True)
         logger.success("QPEP Running")
@@ -162,6 +162,6 @@ class PEPsalScenario(Scenario):
             terminal_workstation.exec_run("bash ./tmp/config/launch_pepsal.sh")
         if self.gateway:
             logger.debug("Deploying PEPsal on Gateway Endpoint")
-            docker_client_cloud = docker.DockerClient(base_url="ssh://julian_huwyler@cloud.jhuwyler.dev")
+            docker_client_cloud = docker.DockerClient(base_url="ssh://"+os.getenv("DOCKER_REMOTE_URL"))
             gateway_workstation = docker_client_cloud.containers.get(os.getenv('WS_GW_CONTAINER_NAME'))
             gateway_workstation.exec_run("bash ./tmp/launch_pepsal.sh")
