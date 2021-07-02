@@ -71,8 +71,8 @@ def iperf_test_scenario():
             logger.debug("Running Iperf Test Scenario (", str(scenario.name), ") with file sizes: " + str(benchmark.file_sizes))
             iperf_scenario_results = benchmark.results
             print(iperf_scenario_results)
+            benchmark.save_results_to_db(str(scenario.name),testbed_name)
         scenario.print_results()
-        benchmark.save_results_to_db(str(scenario.name),testbed_name)
 
 def plt_test_scenario(testbed=None):
     if testbed is None:
