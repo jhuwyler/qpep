@@ -341,6 +341,25 @@ class SitespeedBenchmark(Benchmark):
                 print("Interim Results: ","(", self.name,")", self.results)
             if i != self.iterations - 1:  
                 self.scenario.deploy_scenario()
+    def save_results_to_db(self, scenario_name, testbed_name):
+        data ={}
+        now = datetime.now()
+        docker_client = docker.from_env()
+        terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
+        exit_code, output = terminal_workstation.exec_run("ping -c 1 google.ch")
+        string = output.decode()
+        ping = re.findall("time=([0-9]+)", string)[0]
+        print("Ping: "+ping)
+        data.update({
+            "date": now,
+            "testbed": testbed_name,
+            "scenario": scenario_name,
+            "ping": int(ping),
+            "measurements": self.make_keys_mongoDB_compatible(self.results)
+        })
+        print(data)
+        if data["measurements"] != {}:
+            self.push_to_db("sitespeed",data)
 
     def print_results(self):
         print(self.results)
