@@ -37,10 +37,12 @@ class PlainScenario(Scenario):
         docker_client = docker.from_env()
         terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
         sitespeed_workstation = docker_client.containers.get(os.getenv("WS_SITESPEED_CONTAINER_NAME"))
-        logger.debug("Configuring proxy on Terminal")
-        terminal_workstation.exec_run("./tmp/configure_proxy.sh")
+        logger.debug("Configuring proxy on Terminal WS")
+        terminal_workstation.exec_run("export http_proxy=http://"+os.getenv("PROXY_SRV_URL")+":5001")
+        terminal_workstation.exec_run("export https_proxy=https://"+os.getenv("PROXY_SRV_URL")+":5001")
         logger.debug("Configuring proxy on Sitespeed")
-        sitespeed_workstation.exec_run("./tmp/configure_proxy.sh")
+        sitespeed_workstation.exec_run("export http_proxy=http://"+os.getenv("PROXY_SRV_URL")+":5001")
+        sitespeed_workstation.exec_run("export https_proxy=https://"+os.getenv("PROXY_SRV_URL")+":5001")
 
 class OpenVPNScenario(Scenario):
     def deploy_scenario(self, testbed_up=False):
@@ -150,10 +152,12 @@ class PEPsalScenario(Scenario):
         docker_client = docker.from_env()
         terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
         sitespeed_workstation = docker_client.containers.get(os.getenv("WS_SITESPEED_CONTAINER_NAME"))
-        logger.debug("Configuring proxy on Terminal")
-        terminal_workstation.exec_run("./tmp/configure_proxy.sh")
+        logger.debug("Configuring proxy on Terminal WS")
+        terminal_workstation.exec_run("export http_proxy=http://"+os.getenv("PROXY_SRV_URL")+":5001")
+        terminal_workstation.exec_run("export https_proxy=https://"+os.getenv("PROXY_SRV_URL")+":5001")
         logger.debug("Configuring proxy on Sitespeed")
-        sitespeed_workstation.exec_run("./tmp/configure_proxy.sh")
+        sitespeed_workstation.exec_run("export http_proxy=http://"+os.getenv("PROXY_SRV_URL")+":5001")
+        sitespeed_workstation.exec_run("export https_proxy=https://"+os.getenv("PROXY_SRV_URL")+":5001")
         if self.terminal and self.gateway:
             logger.debug("Deploying PEPsal in Distributed Mode")
 
