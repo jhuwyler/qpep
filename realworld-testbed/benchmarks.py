@@ -56,20 +56,23 @@ class Benchmark(ABC):
             login = file.readlines()[0]
         try:
             client = MongoClient('mongodb://'+ login + '@localhost:27018/?authSource=qpep-database', connectTimeoutMS=3000,serverSelectionTimeoutMS=5000)
-            client.server_info()
+            logger.debug(client.server_info())
         except pymongo.errors.ServerSelectionTimeoutError:
-            print('Could not connect to DB Server via login server')
+            logger.warning('Could not connect to DB Server via login server')
             try:
                 client = MongoClient('mongodb://'+ login + '@mongodb01.ee.ethz.ch:27017/?authSource=qpep-database', connectTimeoutMS=3000,serverSelectionTimeoutMS=5000)
-                client.server_info()
+                logger.debug(client.server_info())
             except pymongo.errors.ServerSelectionTimeoutError:
-                print('Could not connect to DB Server directly')
+                logger.warning('Could not connect to DB Server directly')
+                logger.warning('Could not upload results to DB')
             else:
                 db = client['qpep-database']
                 db[collection_name].insert_one(data)
+                logger.debug("uploaded to DB directly")
         else:
             db = client['qpep-database']
             db[collection_name].insert_one(data)
+            logger.debug("uploaded to DB via login")
     
     @abstractmethod
     def save_results_to_db(self, scenario_name, testbed_name):
@@ -174,8 +177,7 @@ class IperfBenchmark(Benchmark):
         exit_code, output = terminal_workstation.exec_run("ping -c 1 google.ch")
         string = output.decode()
         ping = re.findall("time=([0-9]+)", string)[0]
-        print("Ping[ms]:"+ping)
-        print(self.results)
+        logger.debug("Ping[ms]:"+ping)
         data.update({
             "date": now,
             "testbed": testbed_name,
@@ -183,8 +185,9 @@ class IperfBenchmark(Benchmark):
             "ping": int(ping),
             "measurements": self.make_keys_mongoDB_compatible(self.results)
         })
-        print(data)
+        logger.debug(data)
         if data["measurements"] != {}:
+            logger.debug("Uploading to DB")
             self.push_to_db("iperf_TCP",data)
 
 
