@@ -38,7 +38,7 @@ def iperf_test_scenario():
         for benchmark in scenario.benchmarks:
             logger.debug("Running Iperf Test Scenario (", str(scenario.name), ") with file sizes: " + str(benchmark.file_sizes))
             iperf_scenario_results = benchmark.results
-            print(iperf_scenario_results)
+            logger.info(iperf_scenario_results)
         scenario.print_results()
         benchmark.save_results_to_db(str(scenario.name),testbed_name)
 
@@ -68,7 +68,7 @@ def iperf_UDP_test_scenario():
         for benchmark in scenario.benchmarks:
             logger.debug("Running Iperf Test Scenario (", str(scenario.name), ") with file sizes: " + str(benchmark.file_sizes))
             iperf_scenario_results = benchmark.results
-            print(iperf_scenario_results)
+            logger.info(iperf_scenario_results)
         scenario.print_results()
         benchmark.save_results_to_db(str(scenario.name),testbed_name)
 def plt_test_scenario(testbed=None):
@@ -110,12 +110,9 @@ def plt_test_scenario(testbed=None):
         scenario.deploy_scenario()
         scenario.run_benchmarks(deployed=True)
         for benchmark in scenario.benchmarks:
-            print("Results for PLT " + str(scenario.name))
-            print(benchmark.results)
+            logger.info("Results for PLT " + str(scenario.name))
+            logger.info(benchmark.results)
             benchmark.save_results_to_db(str(scenario.name),testbed_name)
-    for scenario in scenarios:
-        if scenario.name == os.getenv("SCENARIO_NAME"):
-            scenario.print_results()
 
 if __name__ == '__main__':
     # These functions draw on parameters from the .env file to determine which scenarios to run and which portions of the scenario. See the QPEP README for some advice on using .env to run simulations in parallel

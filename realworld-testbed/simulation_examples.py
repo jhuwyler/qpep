@@ -13,38 +13,6 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-def ack_bundling_iperf_scenario():
-    # Simulates ACK decimation ratios for different IPERF transfer sizes at different PLR rates
-    # qpep-only scenario
-    testbed = BasicTestbed(host_ip=HOST_IP)
-    iperf_file_sizes=[1000000, 2000000, 5000000]
-    plr_levels = [0, 1*pow(10,-7), 1*(pow(10, -4)), 1*(pow(10,-2))]
-    benchmarks = [IperfBenchmark(file_sizes=iperf_file_sizes, reset_on_run=True, iterations=int(os.getenv("IPERF_ITERATIONS")))]
-    ack_bundling_numbers = [ack for ack in range(1, 31, 1)]
-    scenario = QPEPAckScenario(name='QPEP Ack Bundling Test', testbed=testbed, benchmarks=[])
-    decimation_results = {}
-    for ack_bundling_number in ack_bundling_numbers[int(os.getenv("ACK_BUNDLING_MIN")):int(os.getenv("ACK_BUNDLING_MAX"))]:
-        scenario.deploy_scenario(ack_level=ack_bundling_number)
-        if str(ack_bundling_number) not in decimation_results.keys():
-            decimation_results[str(ack_bundling_number)] = {}
-        for plr_level in plr_levels:
-            plr_string = numpy.format_float_positional(plr_level, precision=7, trim='-')
-            if plr_string not in decimation_results[str(ack_bundling_number)].keys():
-                decimation_results[str(ack_bundling_number)][plr_string] = []
-            
-            scenario.testbed.set_plr_percentage(plr_string, st_out=False, gw_out=True)
-            scenario.benchmarks = copy.deepcopy(benchmarks)
-            scenario.run_benchmarks(deployed=True)
-            
-            for benchmark in scenario.benchmarks:
-                decimation_results[str(ack_bundling_number)][plr_string].append(benchmark.results)
-            
-            logger.debug("Interim bundling results for PLR level " + str(plr_string) + " and ACK level " + str(ack_bundling_number) +":" + str(decimation_results))
-    print("Final Ack Bundling Results for QPEP " + str(os.getenv("ACK_BUNDLING_MIN") + "-" + str(os.getenv("ACK_BUNDLING_MAX"))))
-    print("*********************\n")
-    print(decimation_results)
-    print("\n*********************")
-
 def iperf_test_scenario():
     # Simulates IPERF transfers at different file sizes
 
@@ -70,7 +38,7 @@ def iperf_test_scenario():
         for benchmark in scenario.benchmarks:
             logger.debug("Running Iperf Test Scenario (", str(scenario.name), ") with file sizes: " + str(benchmark.file_sizes))
             iperf_scenario_results = benchmark.results
-            print(iperf_scenario_results)
+            logger.debug(iperf_scenario_results)
             benchmark.save_results_to_db(str(scenario.name),testbed_name)
         scenario.print_results()
 
@@ -113,18 +81,16 @@ def plt_test_scenario(testbed=None):
         scenario.deploy_scenario()
         scenario.run_benchmarks(deployed=True)
         for benchmark in scenario.benchmarks:
-            print("Results for PLT " + str(scenario.name))
-            print(benchmark.results)
+            logger.info("Results for PLT " + str(scenario.name))
+            logger.info(benchmark.results)
             benchmark.save_results_to_db(str(scenario.name),testbed_name)
-    for scenario in scenarios:
-        if scenario.name == os.getenv("SCENARIO_NAME"):
-            scenario.print_results()
 
 if __name__ == '__main__':
     # These functions draw on parameters from the .env file to determine which scenarios to run and which portions of the scenario. See the QPEP README for some advice on using .env to run simulations in parallel
     logger.remove()
     #logger.add(sys.stderr, level="SUCCESS")
     logger.add(sys.stderr, level="DEBUG")
+    logger.add("/home/lab/Documents/logs/qpep_rw_testbed_{time}.log")
 
     # Run Iperf Goodput Tests
     iperf_test_scenario()
