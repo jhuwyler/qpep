@@ -12,23 +12,23 @@ class RealWorldTestbed(object):
     def start_testbed(self):
         # First, shut down any old running testbeds
         logger.debug("Shutting Down Previous Testbed: local")
-        subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_CLIENT") ,"down"], stderr=subprocess.DEVNULL)
+        subprocess.call(["/usr/local/bin/docker-compose", "-f", os.getenv("COMPOSE_CLIENT") ,"down"], stderr=subprocess.DEVNULL)
         logger.debug("Shutting Down Previous Testbeds: remote")
-        subprocess.call(["ssh", os.getenv("DOCKER_REMOTE_URL"), "docker-compose", "-f", os.getenv("COMPOSE_SERVER") ,"down"], stderr=subprocess.DEVNULL)
+        subprocess.call(["ssh", os.getenv("DOCKER_REMOTE_URL"), "/usr/local/bin/docker-compose", "-f", os.getenv("COMPOSE_SERVER") ,"down"], stderr=subprocess.DEVNULL)
 
         logger.debug("Starting local Testbed Containers")
         # Start the docker containers
-        subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_CLIENT") , "up", "-d"])
+        subprocess.call(["/usr/local/bin/docker-compose", "-f", os.getenv("COMPOSE_CLIENT") , "up", "-d"])
         logger.debug("Starting remote Testbed Containers")
-        subprocess.call(["ssh", os.getenv("DOCKER_REMOTE_URL"), "docker-compose", "-f", os.getenv("COMPOSE_SERVER") , "up", "-d"])
+        subprocess.call(["ssh", os.getenv("DOCKER_REMOTE_URL"), "/usr/local/bin/docker-compose", "-f", os.getenv("COMPOSE_SERVER") , "up", "-d"])
 
         logger.success("Real-world Testbed Running")
 
     def stop_testbed(self):
         logger.debug("Shutting Down Testbed: local")
-        subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_CLIENT") ,"down"], stderr=subprocess.DEVNULL)
+        subprocess.call(["/usr/local/bin/docker-compose", "-f", os.getenv("COMPOSE_CLIENT") ,"down"], stderr=subprocess.DEVNULL)
         logger.debug("Shutting Down Testbeds: remote")
-        subprocess.call(["ssh", os.getenv("DOCKER_REMOTE_URL"), "docker-compose", "-f", os.getenv("COMPOSE_SERVER") ,"down"], stderr=subprocess.DEVNULL)
+        subprocess.call(["ssh", os.getenv("DOCKER_REMOTE_URL"), "/usr/local/bin/docker-compose", "-f", os.getenv("COMPOSE_SERVER") ,"down"], stderr=subprocess.DEVNULL)
     
 
 if __name__ == '__main__':
