@@ -99,7 +99,18 @@ class IperfBenchmark(Benchmark):
         terminal_workstation.exec_run("wget http://1.1.1.1") #use this to warm up vpns/peps
         for i in range(0, self.iterations):
             for file_size in self.file_sizes:
-                test_results = self.run_iperf_test(file_size, self.reset_on_run)
+                try:
+                    test_results = self.run_iperf_test(file_size, self.reset_on_run)
+                except KeyboardInterrupt:
+                    break
+                except:
+                    logger.info("Iperf measurement Failed - Probably Docker Connection issue")
+                    test_results = {
+                        "sent_bytes": 0,
+                        "sent_bps": 0,
+                        "received_bytes": 0,
+                        "received_bps": 0
+                    }
                 result_name = "iperf_" + str(round(file_size/1000000, 3)) + "mb"
                 if result_name not in self.results.keys():
                     self.results[result_name] = {}
@@ -205,7 +216,18 @@ class IperfUDPBenchmark(Benchmark):
         terminal_workstation.exec_run("wget http://1.1.1.1") #use this to warm up vpns/peps
         for i in range(0, self.iterations):
             for file_size in self.file_sizes:
-                test_results = self.run_iperf_test(file_size, self.bw_limit)
+                try:
+                    test_results = self.run_iperf_test(file_size, self.bw_limit)
+                except KeyboardInterrupt:
+                    break
+                except:
+                    logger.info("Iperf measurement Failed - Probably Docker Connection issue")
+                    test_results = {
+                        "sent_bytes": 0,
+                        "sent_bps": 0,
+                        "received_bytes": 0,
+                        "received_bps": 0
+                    }
                 result_name = "iperf_" + str(round(file_size/1000000, 3)) + "mb"
                 if result_name not in self.results.keys():
                     self.results[result_name] = {}
@@ -313,13 +335,18 @@ class SitespeedBenchmark(Benchmark):
         logger.debug("Launching SiteSpeed.io Tests")
         docker_client = docker.from_env()
         sitespeed_workstation = docker_client.containers.get(os.getenv("WS_SITESPEED_CONTAINER_NAME"))
-        sitespeed_workstation.exec_run("wget http://1.1.1.1")
+        sitespeed_workstation.exec_run("wget http://1.1.1.1") #use this to warm up vpns/peps
         host_string = ''
         for i in range(0, self.iterations):
-            sitespeed_workstation.exec_run("wget http://1.1.1.1") #use this to warm up vpns/peps
             for host in self.hosts:
                 host_string = host + " "
-                host_result = sitespeed_workstation.exec_run('/usr/src/app/bin/browsertime.js -n ' + str(self.sub_iterations) +' --headless --browser firefox --cacheClearRaw --firefox.preference network.dns.disableIPv6:true --video=false --visualMetrics=false --visualElements=false ' + str(host_string))
+                try:
+                    host_result = sitespeed_workstation.exec_run('/usr/src/app/bin/browsertime.js -n ' + str(self.sub_iterations) +' --headless --browser firefox --cacheClearRaw --firefox.preference network.dns.disableIPv6:true --video=false --visualMetrics=false --visualElements=false ' + str(host_string))
+                except KeyboardInterrupt:
+                    break
+                except:
+                    logger.debug("Could not get result for "+str(host)+" due to errors")
+                    continue
                 matches = re.findall('Load: ([0-9.]+)([ms])', str(host_result))
                 if self.sub_iterations > 0:
                     matches = matches[:-1] # the last match is the average load time, which we don't want mixing up our stats

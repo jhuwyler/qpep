@@ -120,8 +120,8 @@ if __name__ == '__main__':
     logger.add(sys.stderr, level="DEBUG")
 
     # Run Iperf Goodput Tests
-    #iperf_test_scenario()
-    iperf_UDP_test_scenario()
+    iperf_test_scenario()
+    #iperf_UDP_test_scenario()
 
     # Run PLT Alexa Top 20 Test
     #plt_test_scenario()
