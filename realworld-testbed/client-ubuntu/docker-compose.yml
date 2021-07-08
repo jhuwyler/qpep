@@ -1,0 +1,51 @@
+version: '2.4'
+services:
+  terminal:
+    container_name: qpep-terminal-ubuntu-rw
+    build: terminal/
+    ports:
+      - "3141"
+      - "5358"
+      - "5926"
+    volumes:
+      - "../../src/:/root/go/src"
+    networks:
+      stlan:
+        ipv4_address: 172.30.0.4
+        priority: 1000
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+  ws-st:
+    container_name: qpep-ws-st-ubuntu-rw
+    build: ws-st/
+    networks:
+      stlan:
+        ipv4_address: 172.30.0.9
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+  sitespeed:
+    container_name: qpep-sitespeed-ubuntu-rw
+    build: sitespeed/
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    networks:
+      stlan:
+        ipv4_address: 172.30.0.15
+networks:
+  stlan:
+    name: qpep-stlan-ubuntu-rw
+    driver: bridge
+    enable_ipv6: true
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.30.0.0/24
+        - subnet: 2001:663:6602:142::1/64

@@ -1,0 +1,60 @@
+version: '2.4'
+services:
+  terminal:
+    container_name: ${ST_CONTAINER_NAME:-realworld-qpep-ws-terminal}
+    #image: pavja2/qpep:terminal
+    build: terminal/
+    ports:
+      - "3141"
+      - "5358"
+      - "5926"
+    volumes:
+      - ../../src/:/root/go/src
+    environment:
+      GOPATH: /root/go
+    networks:
+      stlan:
+        ipv4_address: 172.21.0.4
+        priority: 1000
+    privileged: true
+    cap_add:
+      - ALL
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+  ws-st:
+    container_name: ${WS_ST_CONTAINER_NAME:-realworld-qpep-ws-st}
+    #image: pavja2/qpep:ws-st
+    build: ws-st/
+    networks:
+      stlan:
+        ipv4_address: 172.21.0.9
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    volumes:
+      - ../packet-captures/:/home/pcaps
+  sitespeed:
+    container_name: ${WS_SITESPEED_CONTAINER_NAME:-realworld-qpep-sitespeed}
+    build: sitespeed/
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    networks:
+      stlan:
+        ipv4_address: 172.21.0.15
+networks:
+  stlan:
+    name: qpep-stlan
+    driver: bridge
+    enable_ipv6: true
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.21.0.0/24
+        - subnet: 2001:661:6602:142::1/64
