@@ -90,8 +90,7 @@ if __name__ == '__main__':
     logger.remove()
     #logger.add(sys.stderr, level="SUCCESS")
     logger.add(sys.stderr, level="DEBUG")
-    logger.add("/home/lab/Documents/logs/qpep_rw_testbed_{time}.log")
-
+    #logger.add("/home/lab/Documents/logs/qpep_rw_testbed_{time}.log")
     # Run Iperf Goodput Tests
     iperf_test_scenario()
 
