@@ -5,18 +5,19 @@ import (
 )
 
 type QuicConfig struct {
-	AckElicitingPacketsBeforeAck int
-	AckDecimationDenominator     int
+	AckElicitingPacketsBeforeAck   int
+	AckDecimationDenominator       int
 	InitialCongestionWindowPackets int
-	MultiStream bool
-	VarAckDelay float64
-	MaxAckDelay int //in miliseconds, used to determine if decimating
+	MultiStream                    bool
+	VarAckDelay                    float64
+	MaxAckDelay                    int //in miliseconds, used to determine if decimating
 	MinReceivedBeforeAckDecimation int
-	ClientFlag bool
-	GatewayIP string
+	ClientFlag                     bool
+	GatewayIP                      string
+	Port                           int
 }
 
-var ( 
+var (
 	QuicConfiguration QuicConfig
 )
 
@@ -30,17 +31,19 @@ func init() {
 	minReceivedBeforeAckDecimationFlag := flag.Int("minBeforeDecimation", 100, "Minimum number of packets before initiating ack decimation")
 	clientFlag := flag.Bool("client", false, "a bool")
 	gatewayFlag := flag.String("gateway", "198.18.0.254", "IP address of gateway running qpep")
+	portFlag := flag.Int("port", 4242, "Port on which QPEP will send/receive data")
 
 	flag.Parse()
 	QuicConfiguration = QuicConfig{
-		AckElicitingPacketsBeforeAck: *ackElicitingFlag,
-		AckDecimationDenominator: *ackDecimationFlag, 
+		AckElicitingPacketsBeforeAck:   *ackElicitingFlag,
+		AckDecimationDenominator:       *ackDecimationFlag,
 		InitialCongestionWindowPackets: *congestionWindowFlag,
-		MultiStream: *multiStreamFlag, 
-		MaxAckDelay: *maxAckDelayFlag, 
-		VarAckDelay: *varAckDelayFlag, 
+		MultiStream:                    *multiStreamFlag,
+		MaxAckDelay:                    *maxAckDelayFlag,
+		VarAckDelay:                    *varAckDelayFlag,
 		MinReceivedBeforeAckDecimation: *minReceivedBeforeAckDecimationFlag,
-		ClientFlag: *clientFlag,
-		GatewayIP: *gatewayFlag,
+		ClientFlag:                     *clientFlag,
+		GatewayIP:                      *gatewayFlag,
+		Port:                           *portFlag,
 	}
 }
