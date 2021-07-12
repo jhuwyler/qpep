@@ -12,6 +12,8 @@ import (
 
 func main() {
 	client.ClientConfiguration.GatewayHost = shared.QuicConfiguration.GatewayIP
+	client.ClientConfiguration.GatewayPort = shared.QuicConfiguration.Port
+	server.ServerConfiguration.ListenPort = shared.QuicConfiguration.Port
 
 	if shared.QuicConfiguration.ClientFlag {
 		fmt.Println("Running Client")

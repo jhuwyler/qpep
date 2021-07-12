@@ -6,8 +6,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
-	"github.com/lucas-clemente/quic-go"
-	"golang.org/x/net/context"
 	"io"
 	"log"
 	"math/big"
@@ -19,12 +17,15 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/lucas-clemente/quic-go"
+	"golang.org/x/net/context"
 )
 
 var (
-	serverConfig = ServerConfig{ListenHost: "0.0.0.0", ListenPort: 4242}
-	quicListener quic.Listener
-	quicSession  quic.Session
+	ServerConfiguration = ServerConfig{ListenHost: "0.0.0.0", ListenPort: 4242}
+	quicListener        quic.Listener
+	quicSession         quic.Session
 )
 
 type ServerConfig struct {
@@ -33,7 +34,7 @@ type ServerConfig struct {
 }
 
 func RunServer() {
-	listenAddr := serverConfig.ListenHost + ":" + strconv.Itoa(serverConfig.ListenPort)
+	listenAddr := ServerConfiguration.ListenHost + ":" + strconv.Itoa(ServerConfiguration.ListenPort)
 	log.Printf("Opening QPEP Server on: %s", listenAddr)
 	var err error
 	quicListener, err = quic.ListenAddr(listenAddr, generateTLSConfig(), &client.QuicClientConfiguration)
