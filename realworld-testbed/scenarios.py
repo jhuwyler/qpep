@@ -80,9 +80,9 @@ class QPEPScenario(Scenario):
             terminal_container.exec_run("pkill -9 main")
 
         logger.debug("Launching QPEP Client")
-        terminal_container.exec_run("go run /root/go/src/qpep/main.go -client -gateway "+os.getenv("QPEP_SRV_URL"), detach=True)
+        terminal_container.exec_run("go run /root/go/src/qpep/main.go -client -gateway "+os.getenv("QPEP_SRV_URL")+" -port "+os.getenv("QPEP_SRV_PORT"), detach=True)
         logger.debug("Launching QPEP Gateway")
-        gateway_workstation.exec_run("go run /root/go/src/qpep/main.go", detach=True)
+        gateway_workstation.exec_run("go run /root/go/src/qpep/main.go -port "+os.getenv("QPEP_SRV_PORT"), detach=True)
         logger.success("QPEP Running")
 
 class QPEPAckScenario(Scenario):

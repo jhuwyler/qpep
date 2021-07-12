@@ -24,7 +24,7 @@ def iperf_test_scenario():
     iperf_file_sizes.sort()
     with open(str(os.getenv("TESTBED_FILE"))) as file:
         testbed_name = file.readlines()[0]
-    benchmarks = [IperfBenchmark(file_sizes=iperf_file_sizes[4:10], iterations=2)]
+    benchmarks = [IperfBenchmark(file_sizes=iperf_file_sizes, iterations=2)]
     plain_scenario = PlainScenario(name="plain-qport1194", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     vpn_scenario = OpenVPNScenario(name="ovpn", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     pepsal_scenario = PEPsalScenario(name="pepsal", testbed=testbed, benchmarks=copy.deepcopy(benchmarks), terminal=True, gateway=False)
@@ -40,7 +40,7 @@ def iperf_test_scenario():
             iperf_scenario_results = benchmark.results
             logger.info(iperf_scenario_results)
         scenario.print_results()
-        #benchmark.save_results_to_db(str(scenario.name),testbed_name)
+        benchmark.save_results_to_db(str(scenario.name),testbed_name)
 
 def iperf_UDP_test_scenario():
     # Simulates IPERF transfers at different file sizes
