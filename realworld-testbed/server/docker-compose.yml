@@ -5,8 +5,8 @@ services:
     #image: pavja2/qpep:ws-gw
     build: ws-gw/
     ports:
-      - "0.0.0.0:4242:4242/udp"
-      - "0.0.0.0:4242:4242/tcp"
+      - "0.0.0.0:${QPEP_SRV_PORT:-1194}:${QPEP_SRV_PORT:-1194}/udp"
+      - "0.0.0.0:${QPEP_SRV_PORT:-1194}:${QPEP_SRV_PORT:-1194}/tcp"
       - "3141"
       - "5358"
       - "5926"
@@ -40,7 +40,7 @@ services:
     cap_add:
       - NET_ADMIN
     ports:
-      - "0.0.0.0:${WS_OVPN_PORT:-1194}:1194/udp"
+      - "0.0.0.0:1195:1194/udp"
     volumes:
       - ./ws-ovpn/:/etc/openvpn
     sysctls:
