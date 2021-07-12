@@ -81,19 +81,20 @@ def iperf_PEP_test_scenario():
     iperf_file_sizes = [25*1000, 50*1000, 100*1000, 150*1000]+[(i/4)*1000000 for i in range(1, 47)]
     iperf_file_sizes.sort()
     benchmarks = [IperfBenchmark(file_sizes=iperf_file_sizes, iterations=2)]
-    plain_scenario = PlainScenario(name="Plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
-    vpn_scenario = OpenVPNScenario(name="OpenVPN", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
-    qpep_scenario = QPEPScenario(name="QPEP", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
-    scenarios = [vpn_scenario, plain_scenario]
+    plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
+    vpn_scenario = OpenVPNScenario(name="ovpn", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
+    qpep_scenario = QPEPScenario(name="qpep", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
+    pepsal_scenario = PEPsalScenario(name="PEPSal", testbed=testbed, benchmarks=copy.deepcopy(benchmarks), terminal=True, gateway=False)
+    distributed_pepsal_scenario = PEPsalScenario(name="Distributed PEPsal", gateway=True, terminal=True, testbed=testbed,benchmarks=copy.deepcopy(benchmarks))
+    scenarios = [vpn_scenario, plain_scenario, qpep_scenario, pepsal_scenario, distributed_pepsal_scenario]
     for scenario in scenarios:
         logger.debug("Running iperf test scenario " + str(scenario.name))
         iperf_scenario_results = {}
         scenario.run_benchmarks()
         for benchmark in scenario.benchmarks:
             logger.debug("Running Iperf Test Scenario (", str(scenario.name), ") with file sizes: " + str(benchmark.file_sizes))
-            iperf_scenario_results = benchmark.results
-            print(iperf_scenario_results)
         benchmark.save_results_to_db(str(scenario.name),"opensand-pep")
+    print("+"*100+"\n Finished IPERF PEP Scenario! \n"+"+"*100)
 
 def iperf_UDP_test_scenario():
     # Simulates IPERF transfers at different file sizes
@@ -165,6 +166,47 @@ def plt_test_scenario(testbed=None):
         if scenario.name == os.getenv("SCENARIO_NAME"):
             scenario.print_results()
 
+def plt_PEP_scenario(testbed=None):
+    if testbed is None:
+        testbed = BasicPEPTestbed(host_ip=HOST_IP, display_number=0)
+    alexa_top_20 = [
+    "https://www.google.com",
+    "https://www.youtube.com",
+    "https://www.tmall.com",
+    "https://www.facebook.com",
+    "https://www.baidu.com",
+    "https://www.qq.com",
+    "https://www.sohu.com",
+    "https://www.taobao.com",
+    "https://www.360.cn",
+    "https://www.jd.com",
+    "https://www.yahoo.com",
+    "https://www.amazon.com",
+    "https://www.wikipedia.org",
+    "https://www.weibo.com",
+    "https://www.sina.com.cn",
+    "https://www.reddit.com",
+    "https://www.live.com",
+    "https://www.netflix.com",
+    "https://www.okezone.com",
+    "https://www.vk.com"
+    ]
+    plain_scenario = PlainScenario(name="Plain", testbed=testbed, benchmarks=[])
+    vpn_scenario = OpenVPNScenario(name="OpenVPN", testbed=testbed, benchmarks=[])
+    pepsal_scenario = PEPsalScenario(name="PEPSal", testbed=testbed, benchmarks=[], terminal=True, gateway=False)
+    distributed_pepsal_scenario = PEPsalScenario(name="Distributed PEPsal",terminal=True, gateway=True, testbed=testbed,benchmarks=[])
+    qpep_scenario = QPEPScenario(name="QPEP", testbed=testbed, benchmarks=[])
+    scenarios = [plain_scenario, pepsal_scenario, distributed_pepsal_scenario, qpep_scenario, vpn_scenario]
+    for scenario in scenarios:
+        scenario.benchmarks = [SitespeedBenchmark(hosts=alexa_top_20[int(os.getenv("ALEXA_MIN")):int(os.getenv("ALEXA_MAX"))], scenario=scenario, iterations=int(os.getenv("PLT_ITERATIONS")), sub_iterations=int(os.getenv("PLT_SUB_ITERATIONS")))]
+        logger.debug("Running PLT test scenario " + str(scenario.name))
+        scenario.deploy_scenario()
+        scenario.run_benchmarks(deployed=True)
+        for benchmark in scenario.benchmarks:
+            print("Results for PLT " + str(scenario.name))
+            print(benchmark.results)
+            benchmark.save_results_to_db(str(scenario.name),"opensand-pep")
+    print("+"*100+"\n Finished PLT PEP Scenario! \n"+"+"*100)
 def plr_plt_scenario():
     testbed = BasicTestbed(host_ip=HOST_IP)
     
@@ -255,7 +297,7 @@ if __name__ == '__main__':
 
     # Run Iperf Goodput Tests
     iperf_PEP_test_scenario()
-
+    plt_PEP_scenario()
     # Run PLT Alexa Top 20 Test
     #plt_test_scenario()
 
