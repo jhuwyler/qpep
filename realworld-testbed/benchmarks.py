@@ -185,9 +185,16 @@ class IperfBenchmark(Benchmark):
         now = datetime.now()
         docker_client = docker.from_env()
         terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
-        exit_code, output = terminal_workstation.exec_run("ping -c 1 google.ch")
-        string = output.decode()
-        ping = re.findall("time=([0-9]+)", string)[0]
+        try:
+            exit_code, output = terminal_workstation.exec_run("ping -c 1 google.ch")
+        except:
+            logger.warning("Ping measurement failed")
+        try:
+            string = output.decode()
+            ping = re.findall("time=([0-9]+)", string)[0]
+        except:
+            logger.warning("Could not parse ping output. Raw String: "+string)
+            ping = 9999
         logger.debug("Ping[ms]:"+ping)
         data.update({
             "date": now,
@@ -305,10 +312,17 @@ class IperfUDPBenchmark(Benchmark):
         now = datetime.now()
         docker_client = docker.from_env()
         terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
-        exit_code, output = terminal_workstation.exec_run("ping -c 1 google.ch")
-        string = output.decode()
-        ping = re.findall("time=([0-9]+)", string)[0]
-        print("Ping: "+ping)
+        try:
+            exit_code, output = terminal_workstation.exec_run("ping -c 1 google.ch")
+        except:
+            logger.warning("Ping measurement failed")
+        try:
+            string = output.decode()
+            ping = re.findall("time=([0-9]+)", string)[0]
+        except:
+            logger.warning("Could not parse ping output. Raw String: "+string)
+            ping = 9999
+        logger.debug("Ping: "+ping)
         data.update({
             "date": now,
             "testbed": testbed_name,
@@ -385,10 +399,17 @@ class SitespeedBenchmark(Benchmark):
         now = datetime.now()
         docker_client = docker.from_env()
         terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
-        exit_code, output = terminal_workstation.exec_run("ping -c 1 google.ch")
-        string = output.decode()
-        ping = re.findall("time=([0-9]+)", string)[0]
-        print("Ping: "+ping)
+        try:
+            exit_code, output = terminal_workstation.exec_run("ping -c 1 google.ch")
+        except:
+            logger.warning("Ping measurement failed")
+        try:
+            string = output.decode()
+            ping = re.findall("time=([0-9]+)", string)[0]
+        except:
+            logger.warning("Could not parse ping output. Raw String: "+string)
+            ping = 9999
+        logger.debug("Ping: "+ping)
         data.update({
             "date": now,
             "testbed": testbed_name,
@@ -396,29 +417,9 @@ class SitespeedBenchmark(Benchmark):
             "ping": int(ping),
             "measurements": self.make_keys_mongoDB_compatible(self.results)
         })
-        print(data)
+        logger.debug(data)
         if data["measurements"] != {}:
             self.push_to_db("sitespeed",data)
-
-class SpeedtestBenchmark(Benchmark):
-    def __init__(self, server_id=13658):
-        self.server_id = server_id
-        super().__init__(name="SpeedTest")
-
-    def run(self):
-        logger.debug("Launching Speedtest CLI")
-        docker_client = docker.from_env()
-        terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
-        speedtest_results = terminal_workstation.exec_run('python3 /tmp/speedtest.py --json --server ' + str(self.server_id))
-        json_string = speedtest_results.output.decode('unicode_escape').rstrip('\n')
-        json_data = json.loads(json_string)
-        logger.success("Speedtest Complete" + str(json_data["upload"]) + "/" + str(json_data["download"]))
-        return {
-            "sent_bytes": json_data["bytes_sent"],
-            "received_bytes": json_data["bytes_received"],
-            "sent_bps": json_data["upload"],
-            "received_bps": json_data["download"]
-        }
 
 if __name__ == "__main__":
     benchmark = SitespeedBenchmark()
