@@ -57,24 +57,24 @@ class Benchmark(ABC):
         with open(login_file) as file:
             login = file.readlines()[0]
         try:
-            client = MongoClient('mongodb://'+ login + '@localhost:27018/?authSource=qpep-database', connectTimeoutMS=3000,serverSelectionTimeoutMS=5000)
+            client = MongoClient(os.getenv("FIRST_DB_LOGIN_STR"), connectTimeoutMS=3000,serverSelectionTimeoutMS=5000)
             logger.debug(client.server_info())
         except pymongo.errors.ServerSelectionTimeoutError:
-            logger.warning('Could not connect to DB Server via login server')
+            logger.warning('Could not connect to DB Server '+os.getenv("FIRST_DB_NAME"))
             try:
-                client = MongoClient('mongodb://'+ login + '@mongodb01.ee.ethz.ch:27017/?authSource=qpep-database', connectTimeoutMS=3000,serverSelectionTimeoutMS=5000)
+                client = MongoClient(os.getenv("SECOND_DB_LOGIN_STR"), connectTimeoutMS=3000,serverSelectionTimeoutMS=5000)
                 logger.debug(client.server_info())
             except pymongo.errors.ServerSelectionTimeoutError:
-                logger.warning('Could not connect to DB Server directly')
+                logger.warning('Could not connect to DB Server '+os.getenv("SECOND_DB_NAME"))
                 logger.warning('Could not upload results to DB')
             else:
-                db = client['qpep-database']
+                db = client[os.getenv("DB_NAME")]
                 db[collection_name].insert_one(data)
-                logger.debug("uploaded to DB directly")
+                logger.debug('uploaded to DB Server '+os.getenv("SECOND_DB_NAME"))
         else:
-            db = client['qpep-database']
+            db = client[os.getenv("DB_NAME")]
             db[collection_name].insert_one(data)
-            logger.debug("uploaded to DB via login")
+            logger.debug('uploaded to DB Server'+os.getenv("FIRST_DB_NAME"))
     
     @abstractmethod
     def save_results_to_db(self, scenario_name, testbed_name):
