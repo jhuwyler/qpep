@@ -8,3 +8,4 @@
 /venv/
 opensand-testbed/db-login.txt
 opensand-testbed/testbed.txt
+.env
