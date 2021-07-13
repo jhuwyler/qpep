@@ -14,7 +14,7 @@ services:
       GOPATH: /root/go
     networks:
       stlan:
-        ipv4_address: 172.21.0.4
+        ipv4_address: "${ST_NETWORK_HEAD:-172.21}.0.4"
         priority: 1000
     privileged: true
     cap_add:
@@ -30,14 +30,12 @@ services:
     build: ws-st/
     networks:
       stlan:
-        ipv4_address: 172.21.0.9
+        ipv4_address: "${ST_NETWORK_HEAD:-172.21}.0.9"
     privileged: true
     cap_add:
       - NET_ADMIN
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
-    volumes:
-      - ../packet-captures/:/home/pcaps
   sitespeed:
     container_name: ${WS_SITESPEED_CONTAINER_NAME:-realworld-qpep-sitespeed}
     build: sitespeed/
@@ -47,14 +45,14 @@ services:
       - net.ipv6.conf.all.disable_ipv6=1
     networks:
       stlan:
-        ipv4_address: 172.21.0.15
+        ipv4_address: "${ST_NETWORK_HEAD:-172.21}.0.15"
 networks:
   stlan:
-    name: qpep-stlan
+    name: ${ST_NETWORK_NAME:-stlan}
     driver: bridge
     enable_ipv6: true
     ipam:
       driver: default
       config:
-        - subnet: 172.21.0.0/24
+        - subnet: "${ST_NETWORK_HEAD:-172.21}.0.0/24"
         - subnet: 2001:661:6602:142::1/64

@@ -5,6 +5,8 @@ import time
 import os
 from dotenv import load_dotenv
 load_dotenv()
+load_dotenv('./server/.env')
+load_dotenv('./client/.env')
 
 class Scenario(ABC):
     def __init__(self, name, testbed, benchmarks):
