@@ -194,7 +194,7 @@ class IperfBenchmark(Benchmark):
             ping = re.findall("time=([0-9]+)", string)[0]
         except:
             logger.warning("Could not parse ping output. Raw String: "+string)
-            ping = 9999
+            ping = "9999"
         logger.debug("Ping[ms]:"+ping)
         data.update({
             "date": now,
