@@ -12,6 +12,8 @@ import numpy
 import os
 from dotenv import load_dotenv
 load_dotenv()
+load_dotenv('./server/.env')
+load_dotenv('./client/.env')
 
 def iperf_test_scenario():
     # Simulates IPERF transfers at different file sizes
@@ -22,8 +24,7 @@ def iperf_test_scenario():
     # experience these costs once, when the customer starts the respective applications
     iperf_file_sizes = [25*1000, 50*1000, 100*1000, 150*1000]+[(i/4)*1000000 for i in range(1, 47)]
     iperf_file_sizes.sort()
-    with open(str(os.getenv("TESTBED_FILE"))) as file:
-        testbed_name = file.readlines()[0]
+
     benchmarks = [IperfBenchmark(file_sizes=iperf_file_sizes[int(os.getenv("IPERF_MIN_SIZE_INDEX")):int(os.getenv("IPERF_MAX_SIZE_INDEX"))], iterations=int(os.getenv("IPERF_ITERATIONS")))]
     plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     vpn_scenario = OpenVPNScenario(name="ovpn", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
@@ -39,7 +40,7 @@ def iperf_test_scenario():
             logger.debug("Running Iperf Test Scenario (", str(scenario.name), ") with file sizes: " + str(benchmark.file_sizes))
             iperf_scenario_results = benchmark.results
             logger.debug(iperf_scenario_results)
-            benchmark.save_results_to_db(str(scenario.name),testbed_name)
+            benchmark.save_results_to_db(str(scenario.name),os.getenv("TESTBED_NAME"))
         scenario.print_results()
 
 def plt_test_scenario(testbed=None):
@@ -67,8 +68,6 @@ def plt_test_scenario(testbed=None):
         "https://www.okezone.com",
         "https://www.vk.com"
     ]
-    with open(str(os.getenv("TESTBED_FILE"))) as file:
-        testbed_name = file.readlines()[0]
     plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=[])
     vpn_scenario = OpenVPNScenario(name="ovpn", testbed=testbed, benchmarks=[])
     pepsal_scenario = PEPsalScenario(name="pepsal", testbed=testbed, benchmarks=[], terminal=True, gateway=False)
@@ -83,7 +82,7 @@ def plt_test_scenario(testbed=None):
         for benchmark in scenario.benchmarks:
             logger.info("Results for PLT " + str(scenario.name))
             logger.info(benchmark.results)
-            benchmark.save_results_to_db(str(scenario.name),testbed_name)
+            benchmark.save_results_to_db(str(scenario.name),os.getenv("TESTBED_NAME"))
 
 if __name__ == '__main__':
     # These functions draw on parameters from the .env file to determine which scenarios to run and which portions of the scenario. See the QPEP README for some advice on using .env to run simulations in parallel
