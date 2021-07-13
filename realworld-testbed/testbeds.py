@@ -1,9 +1,7 @@
 import subprocess
 import os
 from loguru import logger
-import nclib
 import docker
-import time
 import xml.etree.ElementTree as ET
 from dotenv import load_dotenv
 load_dotenv()
@@ -35,5 +33,3 @@ if __name__ == '__main__':
     #subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_SERVER") ,"down"], stderr=subprocess.DEVNULL)
     #subprocess.call(["docker-compose", "-f", os.getenv("COMPOSE_SERVER"), "-c", "cloud" ,"up"], stderr=subprocess.DEVNULL)
     docker_client_cloud = docker.DockerClient(base_url="ssh://"+os.getenv("DOCKER_REMOTE_URL"))
-    gateway = docker_client_cloud.containers.get(os.getenv('WS_GW_CONTAINER_NAME'))
-    gateway.exec_run("iperf3 -s", detach=True)
