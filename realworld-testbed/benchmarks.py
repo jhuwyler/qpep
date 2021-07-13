@@ -53,9 +53,7 @@ class Benchmark(ABC):
     def save_results_to_file(self, filename):
         with open(filename, 'w') as outfile:
             json.dump(self.results, outfile)
-    def push_to_db(self, collection_name, data, login_file=str(os.getenv("LOGIN_FILE"))):
-        with open(login_file) as file:
-            login = file.readlines()[0]
+    def push_to_db(self, collection_name, data):
         try:
             client = MongoClient(os.getenv("FIRST_DB_LOGIN_STR"), connectTimeoutMS=3000,serverSelectionTimeoutMS=5000)
             logger.debug(client.server_info())
