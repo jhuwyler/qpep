@@ -22,10 +22,10 @@ def iperf_test_scenario():
 
     benchmarks = [IperfBenchmark(file_sizes=iperf_file_sizes[int(os.getenv("IPERF_MIN_SIZE_INDEX")):int(os.getenv("IPERF_MAX_SIZE_INDEX"))], iterations=int(os.getenv("IPERF_ITERATIONS")))]
     plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
-    vpn_scenario = OpenVPNScenario(name="ovpn", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
+    vpn_scenario = OpenVPNScenario(name="ovpn"+os.getenv("WS_OVPN_PORT"), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     pepsal_scenario = PEPsalScenario(name="pepsal", testbed=testbed, benchmarks=copy.deepcopy(benchmarks), terminal=True, gateway=False)
     distributed_pepsal_scenario = PEPsalScenario(name="dist_pepsal", gateway=True, terminal=True, testbed=testbed,benchmarks=copy.deepcopy(benchmarks))
-    qpep_scenario = QPEPScenario(name="qpep", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
+    qpep_scenario = QPEPScenario(name="qpep"+os.getenv("QPEP_SRV_PORT"), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     scenarios = [qpep_scenario, distributed_pepsal_scenario, vpn_scenario, plain_scenario, pepsal_scenario]
     for scenario in scenarios:
         logger.debug("Running iperf test scenario " + str(scenario.name))
@@ -51,10 +51,10 @@ def iperf_UDP_test_scenario():
         testbed_name = file.readlines()[0]
     benchmarks = [IperfUDPBenchmark(file_sizes=iperf_file_sizes[int(os.getenv("IPERF_MIN_SIZE_INDEX")):int(os.getenv("IPERF_MAX_SIZE_INDEX"))], iterations=int(os.getenv("IPERF_ITERATIONS")))]
     plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
-    vpn_scenario = OpenVPNScenario(name="ovpn", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
+    vpn_scenario = OpenVPNScenario(name="ovpn-port"+os.getenv("WS_OVPN_PORT"), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     pepsal_scenario = PEPsalScenario(name="pepsal", testbed=testbed, benchmarks=copy.deepcopy(benchmarks), terminal=True, gateway=False)
     distributed_pepsal_scenario = PEPsalScenario(name="dist_pepsal", gateway=True, terminal=True, testbed=testbed,benchmarks=copy.deepcopy(benchmarks))
-    qpep_scenario = QPEPScenario(name="qpep", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
+    qpep_scenario = QPEPScenario(name="qpep-port"+os.getenv("QPEP_SRV_PORT"), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     scenarios = [qpep_scenario, distributed_pepsal_scenario, vpn_scenario, plain_scenario, pepsal_scenario]
     for scenario in scenarios:
         logger.debug("Running iperf test scenario " + str(scenario.name))
@@ -93,10 +93,10 @@ def plt_test_scenario(testbed=None):
         "https://www.vk.com"
     ]
     plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=[])
-    vpn_scenario = OpenVPNScenario(name="ovpn", testbed=testbed, benchmarks=[])
+    vpn_scenario = OpenVPNScenario(name="ovpn-port"+os.getenv("WS_OVPN_PORT"), testbed=testbed, benchmarks=[])
     pepsal_scenario = PEPsalScenario(name="pepsal", testbed=testbed, benchmarks=[], terminal=True, gateway=False)
     distributed_pepsal_scenario = PEPsalScenario(name="dist_pepsal",terminal=True, gateway=True, testbed=testbed,benchmarks=[])
-    qpep_scenario = QPEPScenario(name="qpep", testbed=testbed, benchmarks=[])
+    qpep_scenario = QPEPScenario(name="qpep-port"+os.getenv("QPEP_SRV_PORT"), testbed=testbed, benchmarks=[])
     scenarios = [plain_scenario, pepsal_scenario, distributed_pepsal_scenario, qpep_scenario, vpn_scenario]
     for scenario in scenarios:
         scenario.benchmarks = [SitespeedBenchmark(hosts=alexa_top_20[int(os.getenv("ALEXA_MIN")):int(os.getenv("ALEXA_MAX"))], scenario=scenario, iterations=int(os.getenv("PLT_ITERATIONS")), sub_iterations=int(os.getenv("PLT_SUB_ITERATIONS")))]
