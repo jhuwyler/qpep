@@ -1,14 +1,9 @@
 import sys
 import copy
-from datetime import datetime
-from statistics import mean
-import json
-from typing import Collection
 from loguru import logger
 from testbeds import RealWorldTestbed
-from scenarios import QPEPScenario, OpenVPNScenario, PEPsalScenario, PlainScenario, QPEPAckScenario, QPEPCongestionScenario
-from benchmarks import IperfBenchmark, SitespeedBenchmark
-import numpy
+from scenarios import QPEPScenario, OpenVPNScenario, PEPsalScenario, PlainScenario
+from benchmarks import IperfBenchmark, SitespeedBenchmark, IperfUDPBenchmark
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -42,6 +37,35 @@ def iperf_test_scenario():
             logger.debug(iperf_scenario_results)
             benchmark.save_results_to_db(str(scenario.name),os.getenv("TESTBED_NAME"))
         scenario.print_results()
+
+def iperf_UDP_test_scenario():
+    # Simulates IPERF transfers at different file sizes
+
+    testbed = RealWorldTestbed()
+    # from 250k to 9.75 mb in 250kb steps
+    # we add one modest "Warm up" sessions to start the connections for d_pepsal and qpep which have high first packet costs  but only
+    # experience these costs once, when the customer starts the respective applications
+    iperf_file_sizes = [25*1000, 50*1000, 100*1000, 150*1000]+[(i/4)*1000000 for i in range(1, 47)]
+    iperf_file_sizes.sort()
+    with open(str(os.getenv("TESTBED_FILE"))) as file:
+        testbed_name = file.readlines()[0]
+    benchmarks = [IperfUDPBenchmark(file_sizes=iperf_file_sizes[int(os.getenv("IPERF_MIN_SIZE_INDEX")):int(os.getenv("IPERF_MAX_SIZE_INDEX"))], iterations=int(os.getenv("IPERF_ITERATIONS")))]
+    plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
+    vpn_scenario = OpenVPNScenario(name="ovpn", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
+    pepsal_scenario = PEPsalScenario(name="pepsal", testbed=testbed, benchmarks=copy.deepcopy(benchmarks), terminal=True, gateway=False)
+    distributed_pepsal_scenario = PEPsalScenario(name="dist_pepsal", gateway=True, terminal=True, testbed=testbed,benchmarks=copy.deepcopy(benchmarks))
+    qpep_scenario = QPEPScenario(name="qpep", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
+    scenarios = [qpep_scenario, distributed_pepsal_scenario, vpn_scenario, plain_scenario, pepsal_scenario]
+    for scenario in scenarios:
+        logger.debug("Running iperf test scenario " + str(scenario.name))
+        iperf_scenario_results = {}
+        scenario.run_benchmarks()
+        for benchmark in scenario.benchmarks:
+            logger.debug("Running Iperf Test Scenario (", str(scenario.name), ") with file sizes: " + str(benchmark.file_sizes))
+            iperf_scenario_results = benchmark.results
+            logger.info(iperf_scenario_results)
+        scenario.print_results()
+        benchmark.save_results_to_db(str(scenario.name),testbed_name)
 
 def plt_test_scenario(testbed=None):
     if testbed is None:
@@ -87,14 +111,11 @@ def plt_test_scenario(testbed=None):
 if __name__ == '__main__':
     # These functions draw on parameters from the .env file to determine which scenarios to run and which portions of the scenario. See the QPEP README for some advice on using .env to run simulations in parallel
     logger.remove()
-    #logger.add(sys.stderr, level="SUCCESS")
+
     logger.add(sys.stderr, level="DEBUG")
-    #logger.add("/home/lab/Documents/logs/qpep_rw_testbed_{time}.log")
+
     # Run Iperf Goodput Tests
     iperf_test_scenario()
 
     # Run PLT Alexa Top 20 Test
     plt_test_scenario()
-
-    #Next look at ACK decimation
-    #ack_bundling_iperf_scenario()
