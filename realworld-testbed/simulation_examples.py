@@ -7,8 +7,8 @@ from benchmarks import IperfBenchmark, SitespeedBenchmark, IperfUDPBenchmark
 import os
 from dotenv import load_dotenv
 load_dotenv()
-load_dotenv('./server/.env')
-load_dotenv('./client/.env')
+load_dotenv(str(os.getenv("SERVER_ENV")))
+load_dotenv(str(os.getenv("CLIENT_ENV")))
 
 def iperf_test_scenario():
     # Simulates IPERF transfers at different file sizes
