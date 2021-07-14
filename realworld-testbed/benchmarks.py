@@ -12,8 +12,8 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 load_dotenv()
-load_dotenv('./server/.env')
-load_dotenv('./client/.env')
+load_dotenv(str(os.getenv("SERVER_ENV")))
+load_dotenv(str(os.getenv("CLIENT_ENV")))
 
 alexa_top_20 = [
     "https://www.google.com",
