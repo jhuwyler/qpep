@@ -19,13 +19,13 @@ def iperf_test_scenario():
     # experience these costs once, when the customer starts the respective applications
     iperf_file_sizes = [25*1000, 50*1000, 100*1000, 150*1000]+[(i/4)*1000000 for i in range(1, 47)]
     iperf_file_sizes.sort()
-
+    logger.info("+"*10+" Starting IPERF TCP on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"+"*10)
     benchmarks = [IperfBenchmark(file_sizes=iperf_file_sizes[int(os.getenv("IPERF_MIN_SIZE_INDEX")):int(os.getenv("IPERF_MAX_SIZE_INDEX"))], iterations=int(os.getenv("IPERF_ITERATIONS")))]
     plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
-    vpn_scenario = OpenVPNScenario(name="ovpn"+os.getenv("WS_OVPN_PORT"), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
+    vpn_scenario = OpenVPNScenario(name="ovpn-port"+str(os.getenv("WS_OVPN_PORT")), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     pepsal_scenario = PEPsalScenario(name="pepsal", testbed=testbed, benchmarks=copy.deepcopy(benchmarks), terminal=True, gateway=False)
     distributed_pepsal_scenario = PEPsalScenario(name="dist_pepsal", gateway=True, terminal=True, testbed=testbed,benchmarks=copy.deepcopy(benchmarks))
-    qpep_scenario = QPEPScenario(name="qpep"+os.getenv("QPEP_SRV_PORT"), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
+    qpep_scenario = QPEPScenario(name="qpep-port"+str(os.getenv("QPEP_SRV_PORT")), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     scenarios = [qpep_scenario, distributed_pepsal_scenario, vpn_scenario, plain_scenario, pepsal_scenario]
     for scenario in scenarios:
         logger.debug("Running iperf test scenario " + str(scenario.name))
@@ -35,8 +35,9 @@ def iperf_test_scenario():
             logger.debug("Running Iperf Test Scenario (", str(scenario.name), ") with file sizes: " + str(benchmark.file_sizes))
             iperf_scenario_results = benchmark.results
             logger.debug(iperf_scenario_results)
-            benchmark.save_results_to_db(str(scenario.name),os.getenv("TESTBED_NAME"))
-        scenario.print_results()
+            benchmark.save_results_to_db(str(scenario.name),str(os.getenv("TESTBED_NAME")))
+        logger.info("PROGRESS: "+str(int(scenarios.index(scenario))+1)+"/"+str(int(len(scenarios))))
+    logger.info("-"*10+" Finished IPERF TCP on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"-"*10)
 
 def iperf_UDP_test_scenario():
     # Simulates IPERF transfers at different file sizes
@@ -47,14 +48,13 @@ def iperf_UDP_test_scenario():
     # experience these costs once, when the customer starts the respective applications
     iperf_file_sizes = [25*1000, 50*1000, 100*1000, 150*1000]+[(i/4)*1000000 for i in range(1, 47)]
     iperf_file_sizes.sort()
-    with open(str(os.getenv("TESTBED_FILE"))) as file:
-        testbed_name = file.readlines()[0]
+    logger.info("+"*10+" Starting IPERF UDP on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"+"*10)
     benchmarks = [IperfUDPBenchmark(file_sizes=iperf_file_sizes[int(os.getenv("IPERF_MIN_SIZE_INDEX")):int(os.getenv("IPERF_MAX_SIZE_INDEX"))], iterations=int(os.getenv("IPERF_ITERATIONS")))]
     plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
-    vpn_scenario = OpenVPNScenario(name="ovpn-port"+os.getenv("WS_OVPN_PORT"), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
+    vpn_scenario = OpenVPNScenario(name="ovpn-port"+str(os.getenv("WS_OVPN_PORT")), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     pepsal_scenario = PEPsalScenario(name="pepsal", testbed=testbed, benchmarks=copy.deepcopy(benchmarks), terminal=True, gateway=False)
     distributed_pepsal_scenario = PEPsalScenario(name="dist_pepsal", gateway=True, terminal=True, testbed=testbed,benchmarks=copy.deepcopy(benchmarks))
-    qpep_scenario = QPEPScenario(name="qpep-port"+os.getenv("QPEP_SRV_PORT"), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
+    qpep_scenario = QPEPScenario(name="qpep-port"+str(os.getenv("QPEP_SRV_PORT")), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     scenarios = [qpep_scenario, distributed_pepsal_scenario, vpn_scenario, plain_scenario, pepsal_scenario]
     for scenario in scenarios:
         logger.debug("Running iperf test scenario " + str(scenario.name))
@@ -64,8 +64,9 @@ def iperf_UDP_test_scenario():
             logger.debug("Running Iperf Test Scenario (", str(scenario.name), ") with file sizes: " + str(benchmark.file_sizes))
             iperf_scenario_results = benchmark.results
             logger.info(iperf_scenario_results)
-        scenario.print_results()
-        benchmark.save_results_to_db(str(scenario.name),testbed_name)
+            benchmark.save_results_to_db(str(scenario.name),str(os.getenv("TESTBED_NAME")))
+        logger.info("PROGRESS: "+str(int(scenarios.index(scenario))+1)+"/"+str(int(len(scenarios))))
+    logger.info("-"*10+" Finished IPERF UDP on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"-"*10)
 
 def plt_test_scenario(testbed=None):
     if testbed is None:
@@ -93,11 +94,12 @@ def plt_test_scenario(testbed=None):
         "https://www.vk.com"
     ]
     plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=[])
-    vpn_scenario = OpenVPNScenario(name="ovpn-port"+os.getenv("WS_OVPN_PORT"), testbed=testbed, benchmarks=[])
+    vpn_scenario = OpenVPNScenario(name="ovpn-port"+str(os.getenv("WS_OVPN_PORT")), testbed=testbed, benchmarks=[])
     pepsal_scenario = PEPsalScenario(name="pepsal", testbed=testbed, benchmarks=[], terminal=True, gateway=False)
     distributed_pepsal_scenario = PEPsalScenario(name="dist_pepsal",terminal=True, gateway=True, testbed=testbed,benchmarks=[])
-    qpep_scenario = QPEPScenario(name="qpep-port"+os.getenv("QPEP_SRV_PORT"), testbed=testbed, benchmarks=[])
+    qpep_scenario = QPEPScenario(name="qpep-port"+str(os.getenv("QPEP_SRV_PORT")), testbed=testbed, benchmarks=[])
     scenarios = [plain_scenario, pepsal_scenario, distributed_pepsal_scenario, qpep_scenario, vpn_scenario]
+    logger.info("+"*10+" Starting PLT on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"+"*10)
     for scenario in scenarios:
         scenario.benchmarks = [SitespeedBenchmark(hosts=alexa_top_20[int(os.getenv("ALEXA_MIN")):int(os.getenv("ALEXA_MAX"))], scenario=scenario, iterations=int(os.getenv("PLT_ITERATIONS")), sub_iterations=int(os.getenv("PLT_SUB_ITERATIONS")))]
         logger.debug("Running PLT test scenario " + str(scenario.name))
@@ -106,7 +108,9 @@ def plt_test_scenario(testbed=None):
         for benchmark in scenario.benchmarks:
             logger.info("Results for PLT " + str(scenario.name))
             logger.info(benchmark.results)
-            benchmark.save_results_to_db(str(scenario.name),os.getenv("TESTBED_NAME"))
+            benchmark.save_results_to_db(str(scenario.name),str(os.getenv("TESTBED_NAME")))
+        logger.info("PROGRESS: "+str(int(scenarios.index(scenario))+1)+"/"+str(int(len(scenarios))))
+    logger.info("-"*10+" Finished PLT on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"-"*10)
 
 if __name__ == '__main__':
     # These functions draw on parameters from the .env file to determine which scenarios to run and which portions of the scenario. See the QPEP README for some advice on using .env to run simulations in parallel
