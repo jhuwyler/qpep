@@ -69,6 +69,7 @@ def iperf_test_scenario():
                 logger.debug("Running Iperf Test Scenario (", str(scenario.name), ") with file sizes: " + str(benchmark.file_sizes))
                 iperf_scenario_results = benchmark.results
                 print(iperf_scenario_results)
+                benchmark.save_results_to_db(str(scenario.name),"opensand-ovpn")
             scenario.print_results()
 
 def iperf_PEP_test_scenario():
@@ -151,7 +152,7 @@ def plt_test_scenario(testbed=None):
     pepsal_scenario = PEPsalScenario(name="pepsal", testbed=testbed, benchmarks=[], terminal=True, gateway=False)
     distributed_pepsal_scenario = PEPsalScenario(name="dist_pepsal",terminal=True, gateway=True, testbed=testbed,benchmarks=[])
     qpep_scenario = QPEPScenario(name="qpep", testbed=testbed, benchmarks=[])
-    scenarios = [vpn_scenario,qpep_scenario,  pepsal_scenario, distributed_pepsal_scenario]
+    scenarios = [vpn_scenario,qpep_scenario,  pepsal_scenario, distributed_pepsal_scenario, plain_scenario]
     for scenario in scenarios:
         if True:
             scenario.benchmarks = [SitespeedBenchmark(hosts=alexa_top_20[int(os.getenv("ALEXA_MIN")):int(os.getenv("ALEXA_MAX"))], scenario=scenario, iterations=int(os.getenv("PLT_ITERATIONS")), sub_iterations=int(os.getenv("PLT_SUB_ITERATIONS")))]
@@ -161,7 +162,7 @@ def plt_test_scenario(testbed=None):
             for benchmark in scenario.benchmarks:
                 print("Results for PLT " + str(scenario.name))
                 print(benchmark.results)
-                benchmark.save_results_to_db(str(scenario.name),"opensand")
+                benchmark.save_results_to_db(str(scenario.name),"opensand-ovpn")
     for scenario in scenarios:
         if scenario.name == os.getenv("SCENARIO_NAME"):
             scenario.print_results()

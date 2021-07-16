@@ -14,5 +14,6 @@ FROM pavja2/qpep:terminal
 COPY config/term.conf /etc/opensand/daemon.conf
 COPY config/entrypoint.sh /tmp/entrypoint.sh
 RUN chmod +x /tmp/entrypoint.sh
+RUN apt-get install -y tcpdump net-tools iputils-ping
 COPY pepsal /usr/bin/pepsal
 ENTRYPOINT /bin/bash /tmp/entrypoint.sh
