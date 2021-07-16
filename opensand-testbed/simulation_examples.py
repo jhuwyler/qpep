@@ -146,14 +146,14 @@ def plt_test_scenario(testbed=None):
     "https://www.okezone.com",
     "https://www.vk.com"
     ]
-    plain_scenario = PlainScenario(name="Plain", testbed=testbed, benchmarks=[])
-    vpn_scenario = OpenVPNScenario(name="OpenVPN", testbed=testbed, benchmarks=[])
-    pepsal_scenario = PEPsalScenario(name="PEPSal", testbed=testbed, benchmarks=[], terminal=True, gateway=False)
-    distributed_pepsal_scenario = PEPsalScenario(name="Distributed PEPsal",terminal=True, gateway=True, testbed=testbed,benchmarks=[])
-    qpep_scenario = QPEPScenario(name="QPEP", testbed=testbed, benchmarks=[])
-    scenarios = [plain_scenario, pepsal_scenario, distributed_pepsal_scenario, qpep_scenario, vpn_scenario]
+    plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=[])
+    vpn_scenario = OpenVPNScenario(name="ovpn-new", testbed=testbed, benchmarks=[])
+    pepsal_scenario = PEPsalScenario(name="pepsal", testbed=testbed, benchmarks=[], terminal=True, gateway=False)
+    distributed_pepsal_scenario = PEPsalScenario(name="dist_pepsal",terminal=True, gateway=True, testbed=testbed,benchmarks=[])
+    qpep_scenario = QPEPScenario(name="qpep", testbed=testbed, benchmarks=[])
+    scenarios = [vpn_scenario,qpep_scenario,  pepsal_scenario, distributed_pepsal_scenario]
     for scenario in scenarios:
-        if scenario.name == os.getenv("SCENARIO_NAME"):
+        if True:
             scenario.benchmarks = [SitespeedBenchmark(hosts=alexa_top_20[int(os.getenv("ALEXA_MIN")):int(os.getenv("ALEXA_MAX"))], scenario=scenario, iterations=int(os.getenv("PLT_ITERATIONS")), sub_iterations=int(os.getenv("PLT_SUB_ITERATIONS")))]
             logger.debug("Running PLT test scenario " + str(scenario.name))
             scenario.deploy_scenario()
@@ -161,6 +161,7 @@ def plt_test_scenario(testbed=None):
             for benchmark in scenario.benchmarks:
                 print("Results for PLT " + str(scenario.name))
                 print(benchmark.results)
+                benchmark.save_results_to_db(str(scenario.name),"opensand")
     for scenario in scenarios:
         if scenario.name == os.getenv("SCENARIO_NAME"):
             scenario.print_results()
@@ -254,10 +255,10 @@ if __name__ == '__main__':
     logger.add(sys.stderr, level="DEBUG")
 
     # Run Iperf Goodput Tests
-    iperf_PEP_test_scenario()
+    #iperf_PEP_test_scenario()
 
     # Run PLT Alexa Top 20 Test
-    #plt_test_scenario()
+    plt_test_scenario()
 
     # Run PLR Tests
     # First look at Iperf over attenuation
