@@ -53,8 +53,8 @@ class OpenVPNScenario(Scenario):
         docker_client = docker.from_env()
         terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
         # Satellite latency means that it takes OpenVPN a long time to establish the connection, waiting is easiest
-        logger.debug("Launching OVPN and waiting...")
-        terminal_workstation.exec_run("openvpn --config /root/client.ovpn --daemon")
+        logger.debug("Launching OVPN and waiting...remote "+str(os.getenv("WS_OVPN_URL"))+" "+str(os.getenv("WS_OVPN_PORT")))
+        terminal_workstation.exec_run("openvpn --remote "+str(os.getenv("WS_OVPN_URL"))+" "+str(os.getenv("WS_OVPN_PORT"))+" udp --config /root/client.ovpn --daemon")
         time.sleep(20)
 
 class QPEPScenario(Scenario):
