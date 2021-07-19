@@ -348,14 +348,14 @@ class SitespeedBenchmark(Benchmark):
     def run(self):
         logger.debug("Launching SiteSpeed.io Tests")
         docker_client = docker.from_env()
-        sitespeed_workstation = docker_client.containers.get(os.getenv("WS_SITESPEED_CONTAINER_NAME"))
-        sitespeed_workstation.exec_run("wget http://1.1.1.1") #use this to warm up vpns/peps
+        terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
+        terminal_workstation.exec_run("wget http://1.1.1.1") #use this to warm up vpns/peps
         host_string = ''
         for i in range(0, self.iterations):
             for host in self.hosts:
                 host_string = host + " "
                 try:
-                    host_result = sitespeed_workstation.exec_run('/usr/src/app/bin/browsertime.js -n ' + str(self.sub_iterations) +' --headless --browser firefox --cacheClearRaw --firefox.preference network.dns.disableIPv6:true --video=false --visualMetrics=false --visualElements=false ' + str(host_string))
+                    host_result = terminal_workstation.exec_run('/usr/bin/browsertime -n ' + str(self.sub_iterations) +' --headless --browser firefox --cacheClearRaw --firefox.geckodriverPath /usr/bin/geckodriver --firefox.preference network.dns.disableIPv6:true --video=false --visualMetrics=false --visualElements=false ' + str(host_string))
                 except KeyboardInterrupt:
                     break
                 except:

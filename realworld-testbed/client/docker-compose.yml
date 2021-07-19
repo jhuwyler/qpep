@@ -36,16 +36,6 @@ services:
       - NET_ADMIN
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
-  sitespeed:
-    container_name: ${WS_SITESPEED_CONTAINER_NAME:-realworld-qpep-sitespeed}
-    build: sitespeed/
-    cap_add:
-      - NET_ADMIN
-    sysctls:
-      - net.ipv6.conf.all.disable_ipv6=1
-    networks:
-      stlan:
-        ipv4_address: "${ST_NETWORK_HEAD:-172.21}.0.15"
 networks:
   stlan:
     name: ${ST_NETWORK_NAME:-stlan}
