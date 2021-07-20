@@ -129,16 +129,7 @@ services:
     networks:
       gwlan:
         ipv4_address: "${GW_NETWORK_HEAD:-172.22}.0.10"
-  sitespeed:
-    container_name: ${SITESPEED_CONTAINER_NAME:-sitespeed}
-    build: sitespeed/
-    cap_add:
-      - NET_ADMIN
-    sysctls:
-      - net.ipv6.conf.all.disable_ipv6=1
-    networks:
-      stlan:
-        ipv4_address: "${ST_NETWORK_HEAD:-172.21}.0.15"
+
 networks:
   emulation:
     name: ${EMU_NETWORK_NAME:-emulation}

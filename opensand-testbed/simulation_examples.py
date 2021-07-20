@@ -296,10 +296,10 @@ if __name__ == '__main__':
     logger.add(sys.stderr, level="DEBUG")
 
     # Run Iperf Goodput Tests
-    iperf_PEP_test_scenario()
-    plt_PEP_scenario()
+    iperf_test_scenario()
+    #plt_PEP_scenario()
     # Run PLT Alexa Top 20 Test
-    #plt_test_scenario()
+    plt_test_scenario()
 
     # Run PLR Tests
     # First look at Iperf over attenuation
