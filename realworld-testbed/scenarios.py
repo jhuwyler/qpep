@@ -149,6 +149,7 @@ class PEPsalScenario(Scenario):
         logger.debug("Starting PEPsal Scenario")
         docker_client = docker.from_env()
         terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
+        terminal_client = docker_client.containers.get(os.getenv("ST_CONTAINER_NAME"))
         logger.debug("Configuring proxy on Terminal WS")
         terminal_workstation.exec_run("export http_proxy=http://"+os.getenv("PROXY_SRV_URL")+":5001")
         terminal_workstation.exec_run("export https_proxy=https://"+os.getenv("PROXY_SRV_URL")+":5001")
@@ -157,7 +158,7 @@ class PEPsalScenario(Scenario):
 
         if self.terminal:
             logger.debug("Deploying PEPsal on Terminal Endpoint")
-            terminal_workstation.exec_run("bash ./tmp/config/launch_pepsal.sh")
+            terminal_client.exec_run("bash ./tmp/config/launch_pepsal.sh")
         if self.gateway:
             logger.debug("Deploying PEPsal on Gateway Endpoint")
             docker_client_cloud = docker.DockerClient(base_url="ssh://"+os.getenv("DOCKER_REMOTE_URL"))
