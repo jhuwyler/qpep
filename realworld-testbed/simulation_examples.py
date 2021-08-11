@@ -112,7 +112,7 @@ def plt_test_scenario(testbed=None):
         logger.info("PROGRESS: "+str(int(scenarios.index(scenario))+1)+"/"+str(int(len(scenarios))))
     logger.info("-"*10+" Finished PLT on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"-"*10)
 
-def ovpn_tcp_scenario():
+def ovpn_tcp_iperf():
     testbed = RealWorldTestbed()
     # from 250k to 9.75 mb in 250kb steps
     # we add one modest "Warm up" sessions to start the connections for d_pepsal and qpep which have high first packet costs  but only
@@ -120,11 +120,12 @@ def ovpn_tcp_scenario():
     iperf_file_sizes = [25*1000, 50*1000, 100*1000, 150*1000]+[(i/4)*1000000 for i in range(1, 47)]
     iperf_file_sizes.sort()
     logger.info("+"*10+" Starting IPERF TCP on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"+"*10)
-    benchmarks = [IperfBenchmark(file_sizes=iperf_file_sizes[int(os.getenv("IPERF_MIN_SIZE_INDEX")):int(os.getenv("IPERF_MAX_SIZE_INDEX"))], iterations=int(os.getenv("IPERF_ITERATIONS")))]
+    benchmarks = [
+        IperfBenchmark(file_sizes=iperf_file_sizes[int(os.getenv("IPERF_MIN_SIZE_INDEX")):int(os.getenv("IPERF_MAX_SIZE_INDEX"))], iterations=int(os.getenv("IPERF_ITERATIONS")))
+    ]
     plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     vpn_scenario = OpenVPNTCPScenario(name="ovpn-tcp"+str(os.getenv("WS_OVPN_PORT")), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
-    #scenarios = [vpn_scenario, plain_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario]
-    scenarios = [ vpn_scenario]
+    scenarios = [vpn_scenario, plain_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario]
     for scenario in scenarios:
         logger.debug("Running iperf test scenario " + str(scenario.name))
         iperf_scenario_results = {}
@@ -136,12 +137,58 @@ def ovpn_tcp_scenario():
             benchmark.save_results_to_db(str(scenario.name),str(os.getenv("TESTBED_NAME")))
         logger.info("PROGRESS: "+str(int(scenarios.index(scenario))+1)+"/"+str(int(len(scenarios))))
     logger.info("-"*10+" Finished IPERF TCP on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"-"*10)
+
+def ovpn_tcp_plt(testbed=None):
+    if testbed is None:
+        testbed = RealWorldTestbed()
+    alexa_top_20 = [
+        "https://www.google.com",
+        "https://www.youtube.com",
+        "https://www.tmall.com",
+        "https://www.facebook.com",
+        "https://www.baidu.com",
+        "https://www.qq.com",
+        "https://www.sohu.com",
+        "https://www.taobao.com",
+        "https://www.360.cn",
+        "https://www.jd.com",
+        "https://www.yahoo.com",
+        "https://www.amazon.com",
+        "https://www.wikipedia.org",
+        "https://www.weibo.com",
+        "https://www.sina.com.cn",
+        "https://www.reddit.com",
+        "https://www.live.com",
+        "https://www.netflix.com",
+        "https://www.okezone.com",
+        "https://www.vk.com"
+    ]
+    plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=[])
+    vpn_scenario = OpenVPNScenario(name="ovpn-tcp"+str(os.getenv("WS_OVPN_PORT")), testbed=testbed, benchmarks=[])
+
+    scenarios = [plain_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario]
+    logger.info("+"*10+" Starting PLT on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"+"*10)
+    for scenario in scenarios:
+        scenario.benchmarks = [SitespeedBenchmark(hosts=alexa_top_20[int(os.getenv("ALEXA_MIN")):int(os.getenv("ALEXA_MAX"))], scenario=scenario, iterations=int(os.getenv("PLT_ITERATIONS")), sub_iterations=int(os.getenv("PLT_SUB_ITERATIONS")))]
+        logger.debug("Running PLT test scenario " + str(scenario.name))
+        scenario.deploy_scenario()
+        scenario.run_benchmarks(deployed=True)
+        for benchmark in scenario.benchmarks:
+            logger.info("Results for PLT " + str(scenario.name))
+            logger.info(benchmark.results)
+            benchmark.save_results_to_db(str(scenario.name),str(os.getenv("TESTBED_NAME")))
+        logger.info("PROGRESS: "+str(int(scenarios.index(scenario))+1)+"/"+str(int(len(scenarios))))
+    logger.info("-"*10+" Finished PLT on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"-"*10)
 if __name__ == '__main__':
     # These functions draw on parameters from the .env file to determine which scenarios to run and which portions of the scenario. See the QPEP README for some advice on using .env to run simulations in parallel
     logger.remove()
 
     logger.add(sys.stderr, level="DEBUG")
-
+    
+    # Run TCP version of OVPN (needs to be separately configured)
+    #ovpn_tcp_iperf()
+    #ovpn_tcp_plt()
+    
     # Run Iperf Goodput Tests
     iperf_test_scenario()
 
