@@ -49,13 +49,25 @@ def iperf_UDP_test_scenario():
     iperf_file_sizes = [25*1000, 50*1000, 100*1000, 150*1000]+[(i/4)*1000000 for i in range(1, 47)]
     iperf_file_sizes.sort()
     logger.info("+"*10+" Starting IPERF UDP on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"+"*10)
-    benchmarks = [IperfUDPBenchmark(file_sizes=iperf_file_sizes[int(os.getenv("IPERF_MIN_SIZE_INDEX")):int(os.getenv("IPERF_MAX_SIZE_INDEX"))], iterations=int(os.getenv("IPERF_ITERATIONS")))]
+    file_sizes= iperf_file_sizes[int(os.getenv("IPERF_MIN_SIZE_INDEX")):int(os.getenv("IPERF_MAX_SIZE_INDEX"))]
+    iters = int(os.getenv("IPERF_ITERATIONS"))
+    benchmarks = [
+        IperfUDPBenchmark(file_sizes=file_sizes, iterations=iters, bw_limit="1M"),
+        IperfUDPBenchmark(file_sizes=file_sizes, iterations=iters, bw_limit="2.5M"),
+        IperfUDPBenchmark(file_sizes=file_sizes, iterations=iters, bw_limit="5M"),
+        IperfUDPBenchmark(file_sizes=file_sizes, iterations=iters, bw_limit="10M"),
+        IperfUDPBenchmark(file_sizes=file_sizes, iterations=iters, bw_limit="15M"),
+        IperfUDPBenchmark(file_sizes=file_sizes, iterations=iters, bw_limit="20M"),
+        IperfUDPBenchmark(file_sizes=file_sizes, iterations=iters, bw_limit="30M"),
+        IperfUDPBenchmark(file_sizes=file_sizes, iterations=iters, bw_limit="50M")
+    
+    ]
     plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     vpn_scenario = OpenVPNScenario(name="ovpn-port"+str(os.getenv("WS_OVPN_PORT")), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     pepsal_scenario = PEPsalScenario(name="pepsal", testbed=testbed, benchmarks=copy.deepcopy(benchmarks), terminal=True, gateway=False)
     distributed_pepsal_scenario = PEPsalScenario(name="dist_pepsal", gateway=True, terminal=True, testbed=testbed,benchmarks=copy.deepcopy(benchmarks))
     qpep_scenario = QPEPScenario(name="qpep-port"+str(os.getenv("QPEP_SRV_PORT")), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
-    scenarios = [qpep_scenario, distributed_pepsal_scenario, vpn_scenario, plain_scenario, pepsal_scenario]
+    scenarios = [plain_scenario]
     for scenario in scenarios:
         logger.debug("Running iperf test scenario " + str(scenario.name))
         iperf_scenario_results = {}
