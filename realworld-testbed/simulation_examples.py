@@ -2,7 +2,7 @@ import sys
 import copy
 from loguru import logger
 from testbeds import RealWorldTestbed
-from scenarios import QPEPScenario, OpenVPNScenario, PEPsalScenario, PlainScenario
+from scenarios import QPEPScenario, OpenVPNScenario, PEPsalScenario, PlainScenario, OpenVPNTCPScenario
 from benchmarks import IperfBenchmark, SitespeedBenchmark, IperfUDPBenchmark
 import os
 from dotenv import load_dotenv
@@ -46,22 +46,16 @@ def iperf_UDP_test_scenario():
     # from 250k to 9.75 mb in 250kb steps
     # we add one modest "Warm up" sessions to start the connections for d_pepsal and qpep which have high first packet costs  but only
     # experience these costs once, when the customer starts the respective applications
-    iperf_file_sizes = [(i/4)*1000000 for i in range(1, 47)]
+    iperf_file_sizes = [25*1000, 50*1000, 100*1000, 150*1000]+[(i/4)*1000000 for i in range(1, 47)]
     iperf_file_sizes.sort()
     logger.info("+"*10+" Starting IPERF UDP on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"+"*10)
-    file_sizes_udp = iperf_file_sizes[int(os.getenv("IPERF_MIN_SIZE_INDEX")):int(os.getenv("IPERF_MAX_SIZE_INDEX"))]
-    benchmarks = [
-        IperfUDPBenchmark(file_sizes=file_sizes_udp, iterations=int(os.getenv("IPERF_ITERATIONS")), bw_limit="1M"),
-        IperfUDPBenchmark(file_sizes=file_sizes_udp, iterations=int(os.getenv("IPERF_ITERATIONS")), bw_limit="2.5M"),
-        IperfUDPBenchmark(file_sizes=file_sizes_udp, iterations=int(os.getenv("IPERF_ITERATIONS")), bw_limit="5M"),
-        IperfUDPBenchmark(file_sizes=file_sizes_udp, iterations=int(os.getenv("IPERF_ITERATIONS")), bw_limit="10M"),
-        IperfUDPBenchmark(file_sizes=file_sizes_udp, iterations=int(os.getenv("IPERF_ITERATIONS")), bw_limit="15M"),
-        IperfUDPBenchmark(file_sizes=file_sizes_udp, iterations=int(os.getenv("IPERF_ITERATIONS")), bw_limit="20M"),
-        IperfUDPBenchmark(file_sizes=file_sizes_udp, iterations=int(os.getenv("IPERF_ITERATIONS")), bw_limit="30M"),
-        IperfUDPBenchmark(file_sizes=file_sizes_udp, iterations=int(os.getenv("IPERF_ITERATIONS")), bw_limit="50M")
-    ]
+    benchmarks = [IperfUDPBenchmark(file_sizes=iperf_file_sizes[int(os.getenv("IPERF_MIN_SIZE_INDEX")):int(os.getenv("IPERF_MAX_SIZE_INDEX"))], iterations=int(os.getenv("IPERF_ITERATIONS")))]
     plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
-    scenarios = [plain_scenario]
+    vpn_scenario = OpenVPNScenario(name="ovpn-port"+str(os.getenv("WS_OVPN_PORT")), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
+    pepsal_scenario = PEPsalScenario(name="pepsal", testbed=testbed, benchmarks=copy.deepcopy(benchmarks), terminal=True, gateway=False)
+    distributed_pepsal_scenario = PEPsalScenario(name="dist_pepsal", gateway=True, terminal=True, testbed=testbed,benchmarks=copy.deepcopy(benchmarks))
+    qpep_scenario = QPEPScenario(name="qpep-port"+str(os.getenv("QPEP_SRV_PORT")), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
+    scenarios = [qpep_scenario, distributed_pepsal_scenario, vpn_scenario, plain_scenario, pepsal_scenario]
     for scenario in scenarios:
         logger.debug("Running iperf test scenario " + str(scenario.name))
         iperf_scenario_results = {}
@@ -118,6 +112,30 @@ def plt_test_scenario(testbed=None):
         logger.info("PROGRESS: "+str(int(scenarios.index(scenario))+1)+"/"+str(int(len(scenarios))))
     logger.info("-"*10+" Finished PLT on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"-"*10)
 
+def ovpn_tcp_scenario():
+    testbed = RealWorldTestbed()
+    # from 250k to 9.75 mb in 250kb steps
+    # we add one modest "Warm up" sessions to start the connections for d_pepsal and qpep which have high first packet costs  but only
+    # experience these costs once, when the customer starts the respective applications
+    iperf_file_sizes = [25*1000, 50*1000, 100*1000, 150*1000]+[(i/4)*1000000 for i in range(1, 47)]
+    iperf_file_sizes.sort()
+    logger.info("+"*10+" Starting IPERF TCP on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"+"*10)
+    benchmarks = [IperfBenchmark(file_sizes=iperf_file_sizes[int(os.getenv("IPERF_MIN_SIZE_INDEX")):int(os.getenv("IPERF_MAX_SIZE_INDEX"))], iterations=int(os.getenv("IPERF_ITERATIONS")))]
+    plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
+    vpn_scenario = OpenVPNTCPScenario(name="ovpn-tcp"+str(os.getenv("WS_OVPN_PORT")), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
+    #scenarios = [vpn_scenario, plain_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario]
+    scenarios = [ vpn_scenario]
+    for scenario in scenarios:
+        logger.debug("Running iperf test scenario " + str(scenario.name))
+        iperf_scenario_results = {}
+        scenario.run_benchmarks()
+        for benchmark in scenario.benchmarks:
+            logger.debug("Running Iperf Test Scenario (", str(scenario.name), ") with file sizes: " + str(benchmark.file_sizes))
+            iperf_scenario_results = benchmark.results
+            logger.debug(iperf_scenario_results)
+            benchmark.save_results_to_db(str(scenario.name),str(os.getenv("TESTBED_NAME")))
+        logger.info("PROGRESS: "+str(int(scenarios.index(scenario))+1)+"/"+str(int(len(scenarios))))
+    logger.info("-"*10+" Finished IPERF TCP on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"-"*10)
 if __name__ == '__main__':
     # These functions draw on parameters from the .env file to determine which scenarios to run and which portions of the scenario. See the QPEP README for some advice on using .env to run simulations in parallel
     logger.remove()
