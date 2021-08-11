@@ -230,10 +230,12 @@ class IperfUDPBenchmark(Benchmark):
                 except:
                     logger.info("Iperf measurement Failed - Probably Docker Connection issue")
                     test_results = {
-                        "sent_bytes": 0,
-                        "sent_bps": 0,
-                        "received_bytes": 0,
-                        "received_bps": 0
+                        'seconds': 0,
+                        'bytes': 0,
+                        'bits_per_second': 0,
+                        'lost_packets': 0,
+                        'packets': 0,
+                        'lost_percent': 0
                     }
                 result_name = "iperf_" + str(round(file_size/1000000, 3)) + "mb"
                 if result_name not in self.results.keys():
