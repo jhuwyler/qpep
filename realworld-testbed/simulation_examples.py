@@ -137,7 +137,7 @@ def ovpn_tcp_iperf():
     ]
     plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     vpn_scenario = OpenVPNTCPScenario(name="ovpn-tcp"+str(os.getenv("WS_OVPN_PORT")), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
-    scenarios = [vpn_scenario, plain_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario]
+    scenarios = [vpn_scenario, plain_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario]
     for scenario in scenarios:
         logger.debug("Running iperf test scenario " + str(scenario.name))
         iperf_scenario_results = {}
@@ -176,9 +176,9 @@ def ovpn_tcp_plt(testbed=None):
         "https://www.vk.com"
     ]
     plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=[])
-    vpn_scenario = OpenVPNScenario(name="ovpn-tcp"+str(os.getenv("WS_OVPN_PORT")), testbed=testbed, benchmarks=[])
+    vpn_scenario = OpenVPNTCPScenario(name="ovpn-tcp"+str(os.getenv("WS_OVPN_PORT")), testbed=testbed, benchmarks=[])
 
-    scenarios = [plain_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario]
+    scenarios = [plain_scenario, vpn_scenario, vpn_scenario]
     logger.info("+"*10+" Starting PLT on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"+"*10)
     for scenario in scenarios:
         scenario.benchmarks = [SitespeedBenchmark(hosts=alexa_top_20[int(os.getenv("ALEXA_MIN")):int(os.getenv("ALEXA_MAX"))], scenario=scenario, iterations=int(os.getenv("PLT_ITERATIONS")), sub_iterations=int(os.getenv("PLT_SUB_ITERATIONS")))]
@@ -199,10 +199,10 @@ if __name__ == '__main__':
     
     # Run TCP version of OVPN (needs to be separately configured)
     #ovpn_tcp_iperf()
-    #ovpn_tcp_plt()
+    ovpn_tcp_plt()
     
     # Run Iperf Goodput Tests
-    iperf_test_scenario()
+    #iperf_test_scenario()
 
     # Run PLT Alexa Top 20 Test
-    plt_test_scenario()
+    #plt_test_scenario()
