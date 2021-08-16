@@ -4,7 +4,7 @@ from loguru import logger
 from testbeds import RealWorldTestbed
 from scenarios import QPEPScenario, OpenVPNScenario, PEPsalScenario, PlainScenario, OpenVPNTCPScenario
 from benchmarks import Benchmark, IperfBenchmark, SitespeedBenchmark, IperfUDPBenchmark, ChannelCharBenchmark
-import os
+import os, time
 from dotenv import load_dotenv
 load_dotenv()
 load_dotenv(str(os.getenv("SERVER_ENV")))
@@ -153,7 +153,7 @@ def ovpn_tcp_iperf():
 def ch_char_iperf():
     testbed = RealWorldTestbed()
     logger.info("+"*10+" Starting Channel Characterization on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"+"*10)
-    benchmarks = [ChannelCharBenchmark(10)]
+    benchmarks = [ChannelCharBenchmark(60)]
     plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     logger.debug("Running iperf test scenario " + str(plain_scenario.name))
     iperf_scenario_results = {}
@@ -212,7 +212,12 @@ if __name__ == '__main__':
 
     logger.add(sys.stderr, level="DEBUG")
     # Channel charecterization Tests
-    ch_char_iperf()
+    for i in range(8):
+        for i in range(10):
+            ch_char_iperf()
+        seconds = 20*60
+        print("sleeping for "+str(seconds)+" seconds")
+        time.sleep(seconds)
 
     # Run TCP version of OVPN (needs to be separately configured)
     #ovpn_tcp_iperf()

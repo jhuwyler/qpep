@@ -338,27 +338,24 @@ class IperfUDPBenchmark(Benchmark):
             self.push_to_db("iperf_UDP",data)
 
 class ChannelCharBenchmark(Benchmark):
-    def __init__(self, send_time, bw_limit="5M", reset_on_run=True, iterations=1):
+    def __init__(self, send_time, bw_limit="5M", reset_on_run=True):
         self.send_time = send_time
         self.bw_limit = bw_limit
         self.reset_on_run = reset_on_run
-        self.iterations = iterations
         super().__init__(name="iperf_CH")
 
     def run(self):
         docker_client = docker.from_env()
         terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
         terminal_workstation.exec_run("wget http://1.1.1.1") #use this to warm up vpns/peps
-        for i in range(0, self.iterations):
-            try:
-                test_results = self.run_iperf_test(self.send_time, self.reset_on_run)
-            except KeyboardInterrupt:
-                break
-            except:
-                logger.info("Iperf measurement Failed - Probably Docker Connection issue")
-                test_results = []
-            self.results = test_results
-            print("Interim Results (Iter:", i+1, " of ", self.iterations, "):", self.results)
+        try:
+            test_results = self.run_iperf_test(self.send_time, self.reset_on_run)
+        except KeyboardInterrupt:
+            logger.warning("Keyboard Interrupt")
+        except:
+            logger.info("Iperf measurement Failed - Probably Docker Connection issue")
+            test_results = []
+        self.results = test_results
 
     def run_iperf_test(self,send_time, reset_on_run, timeout=600):
         logger.debug("Starting iperf server")
