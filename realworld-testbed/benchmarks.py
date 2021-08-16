@@ -336,6 +336,97 @@ class IperfUDPBenchmark(Benchmark):
         print(data)
         if data["measurements"] != {}:
             self.push_to_db("iperf_UDP",data)
+
+class ChannelCharBenchmark(Benchmark):
+    def __init__(self, send_time, bw_limit="5M", reset_on_run=True, iterations=1):
+        self.send_time = send_time
+        self.bw_limit = bw_limit
+        self.reset_on_run = reset_on_run
+        self.iterations = iterations
+        super().__init__(name="iperf_CH")
+
+    def run(self):
+        docker_client = docker.from_env()
+        terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
+        terminal_workstation.exec_run("wget http://1.1.1.1") #use this to warm up vpns/peps
+        for i in range(0, self.iterations):
+            try:
+                test_results = self.run_iperf_test(self.send_time, self.reset_on_run)
+            except KeyboardInterrupt:
+                break
+            except:
+                logger.info("Iperf measurement Failed - Probably Docker Connection issue")
+                test_results = []
+            self.results = test_results
+            print("Interim Results (Iter:", i+1, " of ", self.iterations, "):", self.results)
+
+    def run_iperf_test(self,send_time, reset_on_run, timeout=600):
+        logger.debug("Starting iperf server")
+        docker_client_cloud = docker.DockerClient(base_url="ssh://"+os.getenv("DOCKER_REMOTE_URL"))
+        gateway_workstation = docker_client_cloud.containers.get(os.getenv('WS_GW_CONTAINER_NAME'))
+        if reset_on_run:
+            gateway_workstation.exec_run("pkill -9 iperf3")
+            time.sleep(1)
+        gateway_workstation.exec_run("iperf3 -s", detach=True)
+        logger.debug("Starting iperf client")
+        docker_client = docker.from_env()
+        terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
+        if reset_on_run:
+            terminal_workstation.exec_run("pkill -9 iperf3")
+            time.sleep(1)
+        exit_code, output = terminal_workstation.exec_run("/usr/bin/timeout --signal=SIGINT " + str(timeout) +" /usr/bin/iperf3 --no-delay -c "  + str(os.getenv("IPERF_SERVER_ADDRESS"))+ " -R --json -b "+str(self.bw_limit)+" -t "+str(self.send_time))
+        json_string = output.decode('unicode_escape').rstrip('\n').replace('Linux\n', 'Linux') # there's an error in iperf3's json output here
+        try:
+            test_result = json.loads(json_string)
+        except:
+            json_string = "error - control socket has closed unexpectedly"
+        if "error - control socket has closed unexpectedly" in json_string:
+            logger.debug("IPerf connect socket lost, download failed")
+            return []
+        try:
+            logger.debug("Iperf Result: " + str(test_result["end"]["sum_sent"]["bits_per_second"]/1000000) +
+                           "/" + str(test_result["end"]["sum_received"]["bits_per_second"]/1000000))
+        except:
+            logger.error("Unable to parse iperf result")
+            print(json_string)
+            return []
+        return [ result["sum"]["bits_per_second"] for result in test_result["intervals"]]
+    
+    def print_results(self):
+        print("~"*25)
+        print("Full Results: ")
+        print(self.results)
+        print("~"*25)
+    
+    def save_results_to_db(self, scenario_name, testbed_name):
+        data ={}
+        now = datetime.now()
+        docker_client = docker.from_env()
+        terminal_workstation = docker_client.containers.get(os.getenv("WS_ST_CONTAINER_NAME"))
+        try:
+            exit_code, output = terminal_workstation.exec_run("ping -c 1 google.ch")
+        except:
+            logger.warning("Ping measurement failed")
+        try:
+            string = output.decode()
+            ping = re.findall("time=([0-9]+)", string)[0]
+        except:
+            logger.warning("Could not parse ping output. Raw String: "+string)
+            ping = "9999"
+        logger.debug("Ping[ms]:"+ping)
+        data.update({
+            "date": now,
+            "testbed": testbed_name,
+            "scenario": scenario_name,
+            "ping": int(ping),
+            "bw_limit": self.bw_limit,
+            "measurements": self.results
+        })
+        logger.debug(data)
+        if data["measurements"] != []:
+            logger.debug("Uploading to DB")
+            self.push_to_db("iperf_CH",data)
+
 class SitespeedBenchmark(Benchmark):
     def __init__(self, hosts=alexa_top_20, iterations=1, average_only=False, scenario=None, sub_iterations=1):
         self.hosts = hosts

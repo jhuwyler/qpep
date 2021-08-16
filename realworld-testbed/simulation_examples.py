@@ -3,7 +3,7 @@ import copy
 from loguru import logger
 from testbeds import RealWorldTestbed
 from scenarios import QPEPScenario, OpenVPNScenario, PEPsalScenario, PlainScenario, OpenVPNTCPScenario
-from benchmarks import IperfBenchmark, SitespeedBenchmark, IperfUDPBenchmark
+from benchmarks import Benchmark, IperfBenchmark, SitespeedBenchmark, IperfUDPBenchmark, ChannelCharBenchmark
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -137,7 +137,7 @@ def ovpn_tcp_iperf():
     ]
     plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     vpn_scenario = OpenVPNTCPScenario(name="ovpn-tcp"+str(os.getenv("WS_OVPN_PORT")), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
-    scenarios = [vpn_scenario, plain_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario]
+    scenarios = [plain_scenario, vpn_scenario, vpn_scenario, vpn_scenario]
     for scenario in scenarios:
         logger.debug("Running iperf test scenario " + str(scenario.name))
         iperf_scenario_results = {}
@@ -149,6 +149,21 @@ def ovpn_tcp_iperf():
             benchmark.save_results_to_db(str(scenario.name),str(os.getenv("TESTBED_NAME")))
         logger.info("PROGRESS: "+str(int(scenarios.index(scenario))+1)+"/"+str(int(len(scenarios))))
     logger.info("-"*10+" Finished IPERF TCP on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"-"*10)
+
+def ch_char_iperf():
+    testbed = RealWorldTestbed()
+    logger.info("+"*10+" Starting Channel Characterization on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"+"*10)
+    benchmarks = [ChannelCharBenchmark(10)]
+    plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
+    logger.debug("Running iperf test scenario " + str(plain_scenario.name))
+    iperf_scenario_results = {}
+    plain_scenario.run_benchmarks()
+    for benchmark in plain_scenario.benchmarks:
+        logger.debug("Running Iperf Test Scenario (", str(plain_scenario.name), ") for " + str(benchmark.send_time)+" seconds")
+        iperf_scenario_results = benchmark.results
+        logger.debug(iperf_scenario_results)
+        benchmark.save_results_to_db(str(plain_scenario.name),str(os.getenv("TESTBED_NAME")))
+    logger.info("-"*10+" Finished Channel Characterization on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"-"*10)
 
 def ovpn_tcp_plt(testbed=None):
     if testbed is None:
@@ -178,7 +193,7 @@ def ovpn_tcp_plt(testbed=None):
     plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=[])
     vpn_scenario = OpenVPNTCPScenario(name="ovpn-tcp"+str(os.getenv("WS_OVPN_PORT")), testbed=testbed, benchmarks=[])
 
-    scenarios = [plain_scenario, vpn_scenario, vpn_scenario]
+    scenarios = [plain_scenario, vpn_scenario, vpn_scenario, vpn_scenario]
     logger.info("+"*10+" Starting PLT on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"+"*10)
     for scenario in scenarios:
         scenario.benchmarks = [SitespeedBenchmark(hosts=alexa_top_20[int(os.getenv("ALEXA_MIN")):int(os.getenv("ALEXA_MAX"))], scenario=scenario, iterations=int(os.getenv("PLT_ITERATIONS")), sub_iterations=int(os.getenv("PLT_SUB_ITERATIONS")))]
@@ -196,10 +211,12 @@ if __name__ == '__main__':
     logger.remove()
 
     logger.add(sys.stderr, level="DEBUG")
-    
+    # Channel charecterization Tests
+    ch_char_iperf()
+
     # Run TCP version of OVPN (needs to be separately configured)
     #ovpn_tcp_iperf()
-    ovpn_tcp_plt()
+    #ovpn_tcp_plt()
     
     # Run Iperf Goodput Tests
     #iperf_test_scenario()
