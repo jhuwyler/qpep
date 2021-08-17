@@ -398,7 +398,7 @@ class ChannelCharBenchmark(Benchmark):
         if reset_on_run:
             terminal_workstation.exec_run("pkill -9 iperf3")
             time.sleep(1)
-        exit_code, output = terminal_workstation.exec_run("/usr/bin/timeout --signal=SIGINT " + str(timeout) +" /usr/bin/iperf3 --no-delay -c "  + str(os.getenv("IPERF_SERVER_ADDRESS"))+ " -R --json -b "+str(self.bw_limit)+" -t "+str(self.send_time))
+        exit_code, output = terminal_workstation.exec_run("/usr/bin/timeout --signal=SIGINT " + str(timeout) +" /usr/bin/iperf3 --no-delay -c "  +str(os.getenv("GW_NETWORK_HEAD"))+ ".0.9 -R --json -b "+str(self.bw_limit)+" -t "+str(self.send_time))
         json_string = output.decode('unicode_escape').rstrip('\n').replace('Linux\n', 'Linux') # there's an error in iperf3's json output here
         try:
             test_result = json.loads(json_string)
