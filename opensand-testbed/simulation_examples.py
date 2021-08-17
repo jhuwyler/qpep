@@ -310,10 +310,10 @@ if __name__ == '__main__':
     logger.add(sys.stderr, level="DEBUG")
 
     # Run Iperf Goodput Tests
-    #iperf_test_scenario()
+    iperf_test_scenario()
     #plt_PEP_scenario()
     # Run PLT Alexa Top 20 Test
-    #plt_test_scenario()
+    plt_test_scenario()
 
     # Run PLR Tests
     # First look at Iperf over attenuation
@@ -329,9 +329,9 @@ if __name__ == '__main__':
     #Next look at ACK decimation
     #ack_bundling_iperf_scenario()
 
-    for i in range(6):
-        for i in range(10):
-            ch_char_iperf()
-        seconds = 60
-        print("sleeping for "+str(seconds)+" seconds")
-        time.sleep(seconds)
+    #for i in range(6):
+    #    for i in range(10):
+    #        ch_char_iperf()
+    #    seconds = 60
+    #    print("sleeping for "+str(seconds)+" seconds")
+    #    time.sleep(seconds)
