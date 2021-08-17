@@ -6,7 +6,7 @@ import json
 from loguru import logger
 from testbeds import BasicTestbed, LeoTestbed, BasicPEPTestbed
 from scenarios import QPEPScenario, OpenVPNScenario, PEPsalScenario, PlainScenario, QPEPAckScenario, QPEPCongestionScenario
-from benchmarks import IperfBenchmark, SitespeedBenchmark, IperfUDPBenchmark
+from benchmarks import IperfBenchmark, SitespeedBenchmark, IperfUDPBenchmark, ChannelCharBenchmark
 import numpy
 import os
 from dotenv import load_dotenv
@@ -287,6 +287,20 @@ def plr_test_scenario():
             print("\n******************************")
     logger.success("PLR Test Complete")
 
+def ch_char_iperf():
+    testbed = BasicTestbed()
+    logger.info("+"*10+" Starting Channel Characterization on Testbed opensand "+"+"*10)
+    benchmarks = [ChannelCharBenchmark(60)]
+    plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
+    logger.debug("Running iperf test scenario " + str(plain_scenario.name))
+    iperf_scenario_results = {}
+    plain_scenario.run_benchmarks()
+    for benchmark in plain_scenario.benchmarks:
+        logger.debug("Running Iperf Test Scenario (", str(plain_scenario.name), ") for " + str(benchmark.send_time)+" seconds")
+        iperf_scenario_results = benchmark.results
+        logger.debug(iperf_scenario_results)
+        benchmark.save_results_to_db(str(plain_scenario.name),"opensand")
+    logger.info("-"*10+" Finished Channel Characterization on Testbed opensand "+"-"*10)
 
 HOST_IP = "192.168.0.15" # Set this to the IP address of an X Server (Display #0)
 if __name__ == '__main__':
@@ -296,10 +310,10 @@ if __name__ == '__main__':
     logger.add(sys.stderr, level="DEBUG")
 
     # Run Iperf Goodput Tests
-    iperf_test_scenario()
+    #iperf_test_scenario()
     #plt_PEP_scenario()
     # Run PLT Alexa Top 20 Test
-    plt_test_scenario()
+    #plt_test_scenario()
 
     # Run PLR Tests
     # First look at Iperf over attenuation
@@ -314,3 +328,10 @@ if __name__ == '__main__':
 
     #Next look at ACK decimation
     #ack_bundling_iperf_scenario()
+
+    for i in range(6):
+        for i in range(10):
+            ch_char_iperf()
+        seconds = 60
+        print("sleeping for "+str(seconds)+" seconds")
+        time.sleep(seconds)
