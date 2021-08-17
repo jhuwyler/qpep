@@ -212,19 +212,19 @@ if __name__ == '__main__':
 
     logger.add(sys.stderr, level="DEBUG")
     # Channel charecterization Tests
-    for i in range(8):
-        for i in range(10):
-            ch_char_iperf()
-        seconds = 20*60
-        print("sleeping for "+str(seconds)+" seconds")
-        time.sleep(seconds)
+    #for i in range(8):
+    #    for i in range(10):
+    #        ch_char_iperf()
+    #    seconds = 20*60
+    #    print("sleeping for "+str(seconds)+" seconds")
+    #    time.sleep(seconds)
 
     # Run TCP version of OVPN (needs to be separately configured)
     #ovpn_tcp_iperf()
     #ovpn_tcp_plt()
     
     # Run Iperf Goodput Tests
-    #iperf_test_scenario()
+    iperf_test_scenario()
 
     # Run PLT Alexa Top 20 Test
-    #plt_test_scenario()
+    plt_test_scenario()
