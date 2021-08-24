@@ -1,6 +1,7 @@
 FROM pavja2/qpep:ws-st
 # Force routing via the terminal box to the emulation network
 RUN apt update && apt install traceroute
+RUN apt-get install -y tcpdump
 RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
 RUN apt-get update && apt-get install -y nodejs
 RUN npm install -g browsertime
