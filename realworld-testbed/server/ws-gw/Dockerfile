@@ -1,5 +1,6 @@
 FROM pavja2/qpep:ws-gw
 COPY entrypoint.sh /tmp/entrypoint.sh
+RUN apt-get install -y tcpdump
 RUN chmod +x /tmp/entrypoint.sh
 COPY pepsal /usr/bin/pepsal
 COPY launch_pepsal.sh /tmp/launch_pepsal.sh
