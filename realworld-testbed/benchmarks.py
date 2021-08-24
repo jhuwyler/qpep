@@ -87,10 +87,11 @@ class Benchmark(ABC):
         return new_data
 
 class IperfBenchmark(Benchmark):
-    def __init__(self, file_sizes, bw_limit="8000M", reset_on_run=True, iterations=1):
+    def __init__(self,  file_sizes, server_address=os.getenv("IPERF_SERVER_ADDRESS"), bw_limit="8000M", reset_on_run=True, iterations=1):
         self.file_sizes = file_sizes
         self.bw_limit = bw_limit
         self.reset_on_run = reset_on_run
+        self.server_address = server_address
         self.iterations = iterations
         super().__init__(name="IPerf")
 
@@ -137,9 +138,9 @@ class IperfBenchmark(Benchmark):
             terminal_workstation.exec_run("pkill -9 iperf3")
             time.sleep(1)
         if with_timeout:
-            exit_code, output = terminal_workstation.exec_run("/usr/bin/timeout --signal=SIGINT " + str(timeout) +" /usr/bin/iperf3 --no-delay -b "+bw_limit+" -c "  + str(os.getenv("IPERF_SERVER_ADDRESS"))+ " -R --json -n " + str(transfer_bytes))
+            exit_code, output = terminal_workstation.exec_run("/usr/bin/timeout --signal=SIGINT " + str(timeout) +" /usr/bin/iperf3 --no-delay -b "+bw_limit+" -c "  + str(self.server_address)+ " -R --json -n " + str(transfer_bytes))
         else:
-            exit_code, output = terminal_workstation.exec_run("iperf3 --no-delay -b "+bw_limit+" -c "  + str(os.getenv("IPERF_SERVER_ADDRESS"))+ " -R --json -n " + str(transfer_bytes))
+            exit_code, output = terminal_workstation.exec_run("iperf3 --no-delay -b "+bw_limit+" -c "  + str(self.server_address)+ " -R --json -n " + str(transfer_bytes))
         json_string = output.decode('unicode_escape').rstrip('\n').replace('Linux\n', 'Linux') # there's an error in iperf3's json output here
         try:
             test_result = json.loads(json_string)
