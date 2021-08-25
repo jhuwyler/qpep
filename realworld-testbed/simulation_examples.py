@@ -64,10 +64,6 @@ def iperf_UDP_test_scenario():
     
     ]
     plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
-    vpn_scenario = OpenVPNScenario(name="ovpn-port"+str(os.getenv("WS_OVPN_PORT")), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
-    pepsal_scenario = PEPsalScenario(name="pepsal", testbed=testbed, benchmarks=copy.deepcopy(benchmarks), terminal=True, gateway=False)
-    distributed_pepsal_scenario = PEPsalScenario(name="dist_pepsal", gateway=True, terminal=True, testbed=testbed,benchmarks=copy.deepcopy(benchmarks))
-    qpep_scenario = QPEPScenario(name="qpep-port"+str(os.getenv("QPEP_SRV_PORT")), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
     scenarios = [plain_scenario]
     for scenario in scenarios:
         logger.debug("Running iperf test scenario " + str(scenario.name))
@@ -220,10 +216,13 @@ if __name__ == '__main__':
     #    print("sleeping for "+str(seconds)+" seconds")
     #    time.sleep(seconds)
 
+    # IPERF UDP Tests
+    #iperf_UDP_test_scenario()
+
     # Run TCP version of OVPN (needs to be separately configured)
     #ovpn_tcp_iperf()
     #ovpn_tcp_plt()
-    
+
     # Run Iperf Goodput Tests
     iperf_test_scenario()
 
