@@ -129,12 +129,11 @@ def ovpn_tcp_iperf():
     iperf_file_sizes = [25*1000, 50*1000, 100*1000, 150*1000]+[(i/4)*1000000 for i in range(1, 47)]
     iperf_file_sizes.sort()
     logger.info("+"*10+" Starting IPERF TCP on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"+"*10)
-    benchmarks = [
-        IperfBenchmark(file_sizes=iperf_file_sizes[int(os.getenv("IPERF_MIN_SIZE_INDEX")):int(os.getenv("IPERF_MAX_SIZE_INDEX"))], iterations=int(os.getenv("IPERF_ITERATIONS")))
-    ]
-    plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
-    vpn_scenario = OpenVPNTCPScenario(name="ovpn-tcp"+str(os.getenv("WS_OVPN_PORT")), testbed=testbed, benchmarks=copy.deepcopy(benchmarks))
-    scenarios = [plain_scenario, vpn_scenario, vpn_scenario, vpn_scenario]
+
+    benchmarks_ovpn = [IperfBenchmark(file_sizes=iperf_file_sizes[int(os.getenv("IPERF_MIN_SIZE_INDEX")):int(os.getenv("IPERF_MAX_SIZE_INDEX"))], server_address="172.22.0.9", iterations=int(os.getenv("IPERF_ITERATIONS")))]
+
+    vpn_scenario = OpenVPNTCPScenario(name="ovpn-tcp"+str(os.getenv("WS_OVPN_PORT")), testbed=testbed, benchmarks=copy.deepcopy(benchmarks_ovpn))
+    scenarios = [ vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario, vpn_scenario]
     for scenario in scenarios:
         logger.debug("Running iperf test scenario " + str(scenario.name))
         iperf_scenario_results = {}
@@ -220,11 +219,11 @@ if __name__ == '__main__':
     #iperf_UDP_test_scenario()
 
     # Run TCP version of OVPN (needs to be separately configured)
-    #ovpn_tcp_iperf()
+    ovpn_tcp_iperf()
     #ovpn_tcp_plt()
 
     # Run Iperf Goodput Tests
-    iperf_test_scenario()
+    #iperf_test_scenario()
 
     # Run PLT Alexa Top 20 Test
-    plt_test_scenario()
+    #plt_test_scenario()
