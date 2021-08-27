@@ -195,7 +195,7 @@ class IperfBenchmark(Benchmark):
             string = output.decode()
             ping = re.findall("time=([0-9]+)", string)[0]
         except:
-            logger.warning("Could not parse ping output. Raw String: "+string)
+            logger.warning("Could not parse ping output.")
             ping = "9999"
         logger.debug("Ping[ms]:"+ping)
         data.update({
@@ -324,7 +324,7 @@ class IperfUDPBenchmark(Benchmark):
             string = output.decode()
             ping = re.findall("time=([0-9]+)", string)[0]
         except:
-            logger.warning("Could not parse ping output. Raw String: "+string)
+            logger.warning("Could not parse ping output.")
             ping = 9999
         logger.debug("Ping: "+ping)
         data.update({
@@ -410,7 +410,7 @@ class ChannelCharBenchmark(Benchmark):
             string = output.decode()
             ping = re.findall("time=([0-9]+)", string)[0]
         except:
-            logger.warning("Could not parse ping output. Raw String: "+string)
+            logger.warning("Could not parse ping output.")
             ping = "9999"
         logger.debug("Ping[ms]:"+ping)
         data.update({
@@ -499,7 +499,7 @@ class SitespeedBenchmark(Benchmark):
             string = output.decode()
             ping = re.findall("time=([0-9]+)", string)[0]
         except:
-            logger.warning("Could not parse ping output. Raw String: "+string)
+            logger.warning("Could not parse ping output. ")
             ping = 9999
         logger.debug("Ping: "+ping)
         data.update({
