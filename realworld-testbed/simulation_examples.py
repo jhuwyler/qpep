@@ -77,31 +77,10 @@ def iperf_UDP_test_scenario():
         logger.info("PROGRESS: "+str(int(scenarios.index(scenario))+1)+"/"+str(int(len(scenarios))))
     logger.info("-"*10+" Finished IPERF UDP on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"-"*10)
 
-def plt_test_scenario(testbed=None):
+def plt_test_scenario(hosts_under_test, testbed=None):
     if testbed is None:
         testbed = RealWorldTestbed()
-    alexa_top_20 = [
-        "https://www.google.com",
-        "https://www.youtube.com",
-        "https://www.tmall.com",
-        "https://www.facebook.com",
-        "https://www.baidu.com",
-        "https://www.qq.com",
-        "https://www.sohu.com",
-        "https://www.taobao.com",
-        "https://www.360.cn",
-        "https://www.jd.com",
-        "https://www.yahoo.com",
-        "https://www.amazon.com",
-        "https://www.wikipedia.org",
-        "https://www.weibo.com",
-        "https://www.sina.com.cn",
-        "https://www.reddit.com",
-        "https://www.live.com",
-        "https://www.netflix.com",
-        "https://www.okezone.com",
-        "https://www.vk.com"
-    ]
+
     plain_scenario = PlainScenario(name="plain", testbed=testbed, benchmarks=[])
     vpn_scenario = OpenVPNScenario(name="ovpn-port"+str(os.getenv("WS_OVPN_PORT")), testbed=testbed, benchmarks=[])
     pepsal_scenario = PEPsalScenario(name="pepsal", testbed=testbed, benchmarks=[], terminal=True, gateway=False)
@@ -110,7 +89,7 @@ def plt_test_scenario(testbed=None):
     scenarios = [plain_scenario, pepsal_scenario, distributed_pepsal_scenario, qpep_scenario, vpn_scenario]
     logger.info("+"*10+" Starting PLT on Testbed "+str(os.getenv("TESTBED_NAME"))+" "+"+"*10)
     for scenario in scenarios:
-        scenario.benchmarks = [SitespeedBenchmark(hosts=alexa_top_20[int(os.getenv("ALEXA_MIN")):int(os.getenv("ALEXA_MAX"))], scenario=scenario, iterations=int(os.getenv("PLT_ITERATIONS")), sub_iterations=int(os.getenv("PLT_SUB_ITERATIONS")))]
+        scenario.benchmarks = [SitespeedBenchmark(hosts=hosts_under_test, scenario=scenario, iterations=int(os.getenv("PLT_ITERATIONS")), sub_iterations=int(os.getenv("PLT_SUB_ITERATIONS")))]
         logger.debug("Running PLT test scenario " + str(scenario.name))
         scenario.deploy_scenario()
         scenario.run_benchmarks(deployed=True)
@@ -225,5 +204,46 @@ if __name__ == '__main__':
     # Run Iperf Goodput Tests
     iperf_test_scenario()
 
-    # Run PLT Alexa Top 20 Test
-    plt_test_scenario()
+    # Run PLT Tests
+
+    alexa_top_20 = [
+        "https://www.google.com",
+        "https://www.youtube.com",
+        "https://www.tmall.com",
+        "https://www.facebook.com",
+        "https://www.baidu.com",
+        "https://www.qq.com",
+        "https://www.sohu.com",
+        "https://www.taobao.com",
+        "https://www.360.cn",
+        "https://www.jd.com",
+        "https://www.yahoo.com",
+        "https://www.amazon.com",
+        "https://www.wikipedia.org",
+        "https://www.weibo.com",
+        "https://www.sina.com.cn",
+        "https://www.reddit.com",
+        "https://www.live.com",
+        "https://www.netflix.com",
+        "https://www.okezone.com",
+        "https://www.vk.com"
+    ]
+
+    other_websites = [
+        "https://www.nsg.ee.ethz.ch",
+        "https://www.ar.admin.ch/de/armasuisse-wissenschaft-und-technologie-w-t/cyber-defence_campus.html",
+        "https://www.wriezen.de/",
+        "https://www.rinteln.de/)",
+        "https://www.hoyerswerda.de/",
+        "https://www.parchim.de/de/",
+        "https://pasewalk.de/de/start/",
+        "https://www.demmin.de/",
+        "https://www.gemeinde-niedergoersdorf.de/",
+        "https://www.wittenberge.de/",
+        "https://www.inselstadt-malchow.de/",
+        "https://britz-chorin-oderberg.de/"
+    ]
+
+    alexe_top_20_cut = alexa_top_20[int(os.getenv("ALEXA_MIN")):int(os.getenv("ALEXA_MAX"))]
+
+    plt_test_scenario(alexe_top_20_cut)
