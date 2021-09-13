@@ -9,7 +9,7 @@ services:
       - "5358"
       - "5926"
     volumes:
-      - ../src/:/root/go/src
+      - ../../src/:/root/go/src
     environment:
       GOPATH: /root/go
     networks:
@@ -56,7 +56,7 @@ services:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=0
     volumes:
-      - "../src/:/root/go/src"
+      - "../../src/:/root/go/src"
 networks:
   gwlan:
     name: qpep-gwlan
